@@ -5,35 +5,54 @@ module.exports = {
     data: new SlashCommandBuilder()
         .setName('matchmaking')
         .setDescription('Create a matchmaking lobby')
-        .addStringOption(option => 
+        .addStringOption(option =>
             option.setName('time')
-                .setDescription('Enter the match time (YYYY-MM-DD HH:MM format)')
+                .setDescription('Select match time')
                 .setRequired(true)
+                .addChoices(
+                    { name: 'Now', value: 'now' },
+                    { name: 'In 1 Hour', value: '1_hour' },
+                    { name: 'Tomorrow', value: 'tomorrow' },
+                    { name: 'Custom Time', value: 'custom' }
+                )
         )
-        .addStringOption(option => 
+        .addStringOption(option =>
             option.setName('tags')
                 .setDescription('Select match tags')
                 .setRequired(true)
         )
-        .addStringOption(option => 
+        .addStringOption(option =>
             option.setName('game_code')
                 .setDescription('Enter a 4-digit game code')
                 .setRequired(true)
         )
-        .addStringOption(option => 
+        .addStringOption(option =>
             option.setName('description')
                 .setDescription('Provide a description for the match')
                 .setRequired(false)
         ),
     async execute(interaction) {
-        const timeInput = interaction.options.getString('time');
+        let timeInput = interaction.options.getString('time');
         const tags = interaction.options.getString('tags');
         const gameCode = interaction.options.getString('game_code');
         const description = interaction.options.getString('description') || 'No description provided';
 
-        // Convert time input to a UNIX timestamp
-        const matchTime = new Date(timeInput);
-        const unixTime = Math.floor(matchTime.getTime() / 1000); // Convert to seconds for Discord's timestamp
+        // Calculate time based on selected option
+        let matchTime;
+        if (timeInput === 'now') {
+            matchTime = new Date();
+        } else if (timeInput === '1_hour') {
+            matchTime = new Date(Date.now() + 60 * 60 * 1000);
+        } else if (timeInput === 'tomorrow') {
+            matchTime = new Date();
+            matchTime.setDate(matchTime.getDate() + 1);
+        } else if (timeInput === 'custom') {
+            // For custom time, prompt user to enter it manually (handled elsewhere if needed)
+            await interaction.reply({ content: 'Please enter a custom time in the format YYYY-MM-DD HH:MM.', ephemeral: true });
+            return;
+        }
+
+        const unixTime = Math.floor(matchTime.getTime() / 1000);
 
         // Create initial embed
         const embed = new EmbedBuilder()
