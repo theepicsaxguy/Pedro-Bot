@@ -71,10 +71,7 @@ client.on('interactionCreate', async interaction => {
                     lobbyData.joinedUserIds.push(userId);
                     lobbyData.currentSlots += 1;
 
-                    await updateLobbyEmbed(interaction, lobbyData, [
-                        ButtonManager.createButtonRow(['join', 'leave']),
-                    ]);
-                    
+                    await updateLobbyEmbed(interaction, lobbyData);
                     await interaction.deferUpdate();
                 } else {
                     await interaction.reply({ content: 'You are already in the match!', flags: MessageFlags.Ephemeral });
@@ -127,6 +124,7 @@ client.on('interactionCreate', async interaction => {
         if (interaction.customId === 'customTimeModal') {
             const customTimeInput = interaction.fields.getTextInputValue('customTime');
             const messageId = interaction.message.id;
+            lobbyManager.setLobby(messageId, lobbyData);
             const lobbyData = lobbyManager.getLobby(messageId);
 
             if (!lobbyData) {
