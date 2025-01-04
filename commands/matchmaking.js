@@ -19,7 +19,7 @@ module.exports = {
         )
         .addStringOption(option =>
             option.setName('tags')
-                .setDescription('Select match tags')
+                .setDescription('Select match tags (separate multiple tags with commas)')
                 .setRequired(true)
                 .addChoices(
                     { name: 'Casual', value: 'casual' },
@@ -30,7 +30,7 @@ module.exports = {
         )
         .addStringOption(option =>
             option.setName('game_code')
-                .setDescription('Enter a 4-digit game code')
+                .setDescription('Enter a game code (1 to 4 digits)')
                 .setRequired(true)
         )
         .addStringOption(option =>
@@ -42,9 +42,14 @@ module.exports = {
         await interaction.deferReply(); // Deferring the reply to handle interaction timing
 
         const timeInput = interaction.options.getString('time');
-        const tags = interaction.options.getString('tags');
+        const tags = interaction.options.getString('tags').split(',').map(tag => tag.trim()).join(', ');
         const gameCode = interaction.options.getString('game_code');
-        const description = interaction.options.getString('description') || 'No description provided';
+        const description = interaction.options.getString('description');
+
+        if (!/^[0-9]{1,4}$/.test(gameCode)) {
+            await interaction.editReply({ content: 'Invalid game code. Please enter a number between 1 and 4 digits.', ephemeral: true });
+            return;
+        }
 
         let matchTime;
         if (timeInput === 'now') {
