@@ -107,6 +107,17 @@ module.exports = {
         ];
         const message = await interaction.editReply({ embeds: [embed], components: publicComponents });
 
+        // === CREATE A THREAD FOR THIS MATCH LOBBY ===
+        const thread = await message.startThread({
+                name: `Lobby-${message.id}`,
+                autoArchiveDuration: 60,
+                reason: 'Matchmaking thread',
+            });
+            // Optionally add the creator immediately
+            await thread.members.add(creator);
+            await thread.send(`<@${creator}> This thread is for match communication.`);
+    
+
         lobbyManager.setLobby(message.id, {
             joinedUsers: [username],
             joinedUserIds: [creator],
@@ -118,7 +129,8 @@ module.exports = {
             tags,
             gameCode,
             description,
-            embed
+            embed,
+            threadId: thread.id
         });
 
         interaction.client.scheduleLobbyStart(message.id, matchTime, message);

@@ -80,6 +80,14 @@ client.on('interactionCreate', async interaction => {
 
         switch (interaction.customId) {
             case 'join':
+                // === ADD USER TO THE THREAD IF IT EXISTS ===
+                if (lobbyData.threadId) {
+                        const thread = interaction.channel.threads.cache.get(lobbyData.threadId);
+                        if (thread) {
+                            await thread.members.add(userId);
+                            await thread.send(`Welcome <@${userId}>! All match communication will happen here.`);
+                        }
+                    }
                 if (!lobbyData.joinedUsers.includes(username)) {
                     lobbyData.joinedUsers.push(username);
                     lobbyData.joinedUserIds.push(userId);
