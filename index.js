@@ -71,7 +71,10 @@ client.on('interactionCreate', async interaction => {
                     lobbyData.joinedUserIds.push(userId);
                     lobbyData.currentSlots += 1;
 
-                    await updateLobbyEmbed(interaction, lobbyData);
+                    await updateLobbyEmbed(interaction, lobbyData, [
+                        ButtonManager.createButtonRow(['join', 'leave']),
+                    ]);
+                    
                     await interaction.deferUpdate();
                 } else {
                     await interaction.reply({ content: 'You are already in the match!', flags: MessageFlags.Ephemeral });

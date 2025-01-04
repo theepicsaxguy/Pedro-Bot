@@ -3,7 +3,7 @@
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder } = require('discord.js');
 const ButtonManager = require('./ButtonManager');
 
-async function updateLobbyEmbed(interaction, lobbyData) {
+async function updateLobbyEmbed(interaction, lobbyData, components = []) {
     const embed = EmbedBuilder.from(lobbyData.embed);
     embed.setDescription(
         `🎮 **Created by <@${lobbyData.creator}>!**\n` +
@@ -15,8 +15,13 @@ async function updateLobbyEmbed(interaction, lobbyData) {
         `✅ **Joined:** ${lobbyData.joinedUsers.join(', ')}`
     );
     lobbyData.embed = embed;
-    await interaction.message.edit({ embeds: [embed] });
+    if (interaction.message) {
+        await interaction.message.edit({ embeds: [embed], components });
+    } else {
+        console.error('Message not found or already deleted.');
+    }
 }
+
 
 async function updateLobbyStatus(interaction, lobbyData, title) {
     const embed = EmbedBuilder.from(lobbyData.embed);

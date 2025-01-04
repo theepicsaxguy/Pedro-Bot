@@ -103,16 +103,22 @@ module.exports = {
             )
             .setColor(0x00AE86);
 
-        const components = [
+        // Public lobby message with Join/Leave buttons
+        const publicComponents = [
             ButtonManager.createButtonRow(['join', 'leave'])
         ];
+        const message = await interaction.editReply({ embeds: [embed], components: publicComponents });
 
-        // Adding start and stop buttons for the creator
-        components.push(
+        // Private ephemeral message for the match creator with Start/Stop buttons
+        const privateComponents = [
             ButtonManager.createButtonRow(['start', 'stop'])
-        );
+        ];
+        await interaction.followUp({
+            content: 'Here are your lobby controls:',
+            components: privateComponents,
+            ephemeral: true
+        });
 
-        const message = await interaction.editReply({ embeds: [embed], components });
 
         // Store lobby data
         lobbyManager.setLobby(message.id, {
