@@ -4,7 +4,6 @@ class ButtonManager {
     constructor() {
         this.buttons = new Map();
         this.createDefaultButtons();
-        console.log(`[INFO] Default buttons created.`);
     }
 
     createDefaultButtons() {
@@ -18,19 +17,15 @@ class ButtonManager {
             .setLabel('Leave')
             .setStyle(ButtonStyle.Danger);
 
-        // === REMOVED START AND STOP BUTTONS ===
-
         this.buttons.set('join', joinButton);
         this.buttons.set('leave', leaveButton);
     }
 
     getButton(buttonName) {
-        console.log(`[INFO] Getting button: ${buttonName}`);
         return this.buttons.get(buttonName);
     }
 
     createButtonRow(buttonNames) {
-        console.log(`[INFO] Creating button row: ${buttonNames.join(', ')}`);
         const row = new ActionRowBuilder();
         buttonNames.forEach(buttonName => {
             const button = this.getButton(buttonName);

@@ -1,12 +1,7 @@
-// utils/helpers.js
-
-const { EmbedBuilder, ActionRowBuilder, ButtonBuilder } = require('discord.js');
+const { EmbedBuilder } = require('discord.js');
 const ButtonManager = require('./ButtonManager');
 
 async function updateLobbyEmbed(interaction, lobbyData, components = []) {
-    console.log(`[INFO] Updating lobby embed for messageId: ${interaction.message.id}`);
-    console.log(`[INFO] Lobby data:`, lobbyData);
-
     const embed = EmbedBuilder.from(lobbyData.embed);
     embed.setDescription(
         `🎮 **Created by <@${lobbyData.creator}>!**\n` +
@@ -19,32 +14,23 @@ async function updateLobbyEmbed(interaction, lobbyData, components = []) {
     );
     lobbyData.embed = embed;
 
-    // If provided, use custom components; else keep the existing ones
     const finalComponents = components.length > 0 ? components : interaction.message.components;
 
     if (interaction.message) {
         await interaction.message.edit({ embeds: [embed], components: finalComponents });
-        console.log(`[INFO] Message edited successfully.`);
-    } else {
-        console.error('[ERROR] Message not found or already deleted.');
     }
 }
 
 async function updateLobbyStatus(interaction, lobbyData, title) {
-    console.log(`[INFO] Updating lobby status for messageId: ${interaction.message.id}`);
-    console.log(`[INFO] Lobby data being used:`, lobbyData);
-
     const embed = EmbedBuilder.from(lobbyData.embed);
     embed.setTitle(title);
     lobbyData.embed = embed;
 
-    // We only keep join/leave now
     const components = [
         ButtonManager.createButtonRow(['join', 'leave']),
     ];
 
     await interaction.message.edit({ embeds: [embed], components });
-    console.log(`[INFO] Message edited with new status.`);
 }
 
 module.exports = {

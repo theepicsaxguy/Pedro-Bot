@@ -49,7 +49,6 @@ module.exports = {
         const creator = interaction.user.id;
         const username = interaction.user.username;
 
-        // Input Validations
         if (!/^[0-9]{1,4}$/.test(gameCode)) {
             await interaction.editReply({ content: 'Invalid game code. Please enter a number between 1 and 4 digits.', flags: MessageFlags.Ephemeral });
             return;
@@ -70,7 +69,6 @@ module.exports = {
             matchTime = new Date(now);
             matchTime.setDate(matchTime.getDate() + 1);
         } else if (timeInput === 'custom') {
-            // Handle custom time via modal
             const modal = new ModalBuilder()
                 .setCustomId('customTimeModal')
                 .setTitle('Set Custom Time');
@@ -104,15 +102,11 @@ module.exports = {
             )
             .setColor(0x00AE86);
 
-        // Public lobby message with Join/Leave buttons only
         const publicComponents = [
             ButtonManager.createButtonRow(['join', 'leave'])
         ];
         const message = await interaction.editReply({ embeds: [embed], components: publicComponents });
 
-        // === REMOVED EPHEMERAL MESSAGE & START/STOP BUTTONS ===
-
-        // Store lobby data with the correct message.id
         lobbyManager.setLobby(message.id, {
             joinedUsers: [username],
             joinedUserIds: [creator],
@@ -127,8 +121,6 @@ module.exports = {
             embed
         });
 
-        // Centralized scheduling call
-        // We'll let the main bot file handle the actual scheduleJob
         interaction.client.scheduleLobbyStart(message.id, matchTime, message);
     }
 };
