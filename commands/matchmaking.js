@@ -21,6 +21,12 @@ module.exports = {
             option.setName('tags')
                 .setDescription('Select match tags')
                 .setRequired(true)
+                .addChoices(
+                    { name: 'Casual', value: 'casual' },
+                    { name: 'Tactical', value: 'tactical' },
+                    { name: 'Mislim', value: 'mislim' },
+                    { name: 'Training', value: 'training' }
+                )
         )
         .addStringOption(option =>
             option.setName('game_code')
@@ -30,7 +36,7 @@ module.exports = {
         .addStringOption(option =>
             option.setName('description')
                 .setDescription('Provide a description for the match')
-                .setRequired(false)
+                .setRequired(true)
         ),
     async execute(interaction) {
         await interaction.deferReply(); // Deferring the reply to handle interaction timing
