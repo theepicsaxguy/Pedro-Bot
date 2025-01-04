@@ -1,6 +1,7 @@
-// Updated matchmaking.js with the latest API recommendations
-const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, MessageFlags } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, MessageFlags } = require('discord.js');
 const ButtonManager = require('../utils/ButtonManager');
+const lobbyManager = require('../utils/lobbyManager');
+const schedule = require('node-schedule'); // For scheduling
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -39,16 +40,24 @@ module.exports = {
                 .setRequired(true)
         ),
     async execute(interaction) {
-        await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+        await interaction.deferReply();
 
         const timeInput = interaction.options.getString('time');
-        const tags = interaction.options.getString('tags').split(',').map(tag => tag.trim()).join(', ');
+        const tagsInput = interaction.options.getString('tags');
+        const tags = tagsInput.split(',').map(tag => tag.trim()).join(', ');
         const gameCode = interaction.options.getString('game_code');
         const description = interaction.options.getString('description');
         const creator = interaction.user.id;
+        const username = interaction.user.username;
 
+        // Input Validations
         if (!/^[0-9]{1,4}$/.test(gameCode)) {
             await interaction.editReply({ content: 'Invalid game code. Please enter a number between 1 and 4 digits.', flags: MessageFlags.Ephemeral });
+            return;
+        }
+
+        if (description.length > 200) { // Example limit
+            await interaction.editReply({ content: 'Description is too long. Please limit to 200 characters.', flags: MessageFlags.Ephemeral });
             return;
         }
 
@@ -61,7 +70,22 @@ module.exports = {
             matchTime = new Date();
             matchTime.setDate(matchTime.getDate() + 1);
         } else if (timeInput === 'custom') {
-            await interaction.editReply({ content: 'Please enter a custom time in the format YYYY-MM-DD HH:MM.', flags: MessageFlags.Ephemeral });
+            // Handle custom time via modal
+            const modal = new ModalBuilder()
+                .setCustomId('customTimeModal')
+                .setTitle('Set Custom Time');
+
+            const timeInputField = new TextInputBuilder()
+                .setCustomId('customTime')
+                .setLabel('Enter custom time (YYYY-MM-DD HH:MM)')
+                .setStyle(TextInputStyle.Short)
+                .setPlaceholder('2025-01-04 15:30')
+                .setRequired(true);
+
+            const firstActionRow = new ActionRowBuilder().addComponents(timeInputField);
+            modal.addComponents(firstActionRow);
+
+            await interaction.showModal(modal);
             return;
         }
 
@@ -70,47 +94,54 @@ module.exports = {
         const embed = new EmbedBuilder()
             .setTitle('Matchmaking Lobby')
             .setDescription(
-                `🎮 **Created by ${interaction.user.username}!**\n` +
+                `🎮 **Created by <@${creator}>!**\n` +
                 `📅 **Date/Time:** <t:${unixTime}:F>\n` +
                 `🏷 **Tags:** ${tags}\n` +
                 `🔑 **Game Code:** ${gameCode}\n` +
                 `📜 **Description:** ${description}\n` +
-                `👥 **Slots Available:** 1/6\n✅ **Joined:** ${interaction.user.username}`
+                `👥 **Slots Available:** 1/6\n✅ **Joined:** ${username}`
             )
             .setColor(0x00AE86);
 
-        let components = [new ActionRowBuilder().addComponents(
-            new ButtonBuilder().setCustomId('join').setLabel('Join').setStyle(ButtonStyle.Primary),
-            new ButtonBuilder().setCustomId('leave').setLabel('Leave').setStyle(ButtonStyle.Danger)
-        )];
+        const components = [
+            ButtonManager.createButtonRow(['join', 'leave'])
+        ];
 
-        if (creator === interaction.user.id) {
-            components.push(new ActionRowBuilder().addComponents(
-                new ButtonBuilder().setCustomId('start').setLabel('Start').setStyle(ButtonStyle.Success),
-                new ButtonBuilder().setCustomId('stop').setLabel('Stop').setStyle(ButtonStyle.Secondary)
-            ));
-        }
+        // Adding start and stop buttons for the creator
+        components.push(
+            ButtonManager.createButtonRow(['start', 'stop'])
+        );
 
         const message = await interaction.editReply({ embeds: [embed], components });
 
-        global.lobbyMap.set(message.id, {
-            joinedUsers: [interaction.user.username],
+        // Store lobby data
+        lobbyManager.setLobby(message.id, {
+            joinedUsers: [username],
+            joinedUserIds: [creator],
             started: false,
             totalSlots: 6,
-            creator
+            creator,
+            matchTime,
+            unixTime,
+            tags,
+            gameCode,
+            description,
+            embed
         });
 
-        setTimeout(async () => {
-            const lobbyData = global.lobbyMap.get(message.id);
-            if (lobbyData && !lobbyData.started && matchTime <= new Date()) {
+        // Schedule the match start based on matchTime
+        schedule.scheduleJob(matchTime, async () => {
+            const lobbyData = lobbyManager.getLobby(message.id);
+            if (lobbyData && !lobbyData.started) {
                 lobbyData.started = true;
-                embed.setTitle('Matchmaking Lobby (Started)');
-                await interaction.editReply({ embeds: [embed], components: [
-                    new ActionRowBuilder().addComponents(
-                        new ButtonBuilder().setCustomId('stop').setLabel('Stop').setStyle(ButtonStyle.Secondary)
-                    )
-                ] });
+                lobbyData.embed.setTitle('Matchmaking Lobby (Started)');
+                await message.edit({
+                    embeds: [lobbyData.embed],
+                    components: [
+                        ButtonManager.createButtonRow(['stop'])
+                    ]
+                });
             }
-        }, 1000);
+        });
     }
 };

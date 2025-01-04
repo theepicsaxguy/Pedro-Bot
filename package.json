@@ -8,7 +8,8 @@
   },
   "dependencies": {
     "discord.js": "^14.0.3",
-    "dotenv": "^16.0.3"
+    "dotenv": "^16.0.3",
+    "node-schedule": "^2.1.1"
   },
   "keywords": [],
   "author": "",
