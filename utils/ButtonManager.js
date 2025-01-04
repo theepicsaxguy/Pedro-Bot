@@ -4,9 +4,9 @@ class ButtonManager {
     constructor() {
         this.buttons = new Map();
         this.createDefaultButtons();
+        console.log(`[INFO] Default buttons created.`);
     }
 
-    // Create reusable buttons and store them
     createDefaultButtons() {
         const joinButton = new ButtonBuilder()
             .setCustomId('join')
@@ -34,13 +34,13 @@ class ButtonManager {
         this.buttons.set('stop', stopButton);
     }
 
-    // Get a button by its name
     getButton(buttonName) {
+        console.log(`[INFO] Getting button: ${buttonName}`);
         return this.buttons.get(buttonName);
     }
 
-    // Create a row with multiple buttons
     createButtonRow(buttonNames) {
+        console.log(`[INFO] Creating button row: ${buttonNames.join(', ')}`);
         const row = new ActionRowBuilder();
         buttonNames.forEach(buttonName => {
             const button = this.getButton(buttonName);
@@ -48,7 +48,7 @@ class ButtonManager {
         });
         return row;
     }
-    
 }
 
 module.exports = new ButtonManager();
+

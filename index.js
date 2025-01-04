@@ -56,7 +56,10 @@ client.on('interactionCreate', async interaction => {
         const messageId = interaction.message.id;
         const lobbyData = lobbyManager.getLobby(messageId);
 
+        console.log(`Button interaction detected. User: ${interaction.user.tag}, Button ID: ${interaction.customId}`);
+
         if (!lobbyData) {
+            console.log('Lobby data not found.');
             await interaction.reply({ content: 'Lobby data not found.', flags: MessageFlags.Ephemeral });
             return;
         }
@@ -66,58 +69,73 @@ client.on('interactionCreate', async interaction => {
 
         switch (interaction.customId) {
             case 'join':
+                console.log(`User ${username} is attempting to join the lobby.`);
                 if (!lobbyData.joinedUsers.includes(username)) {
                     lobbyData.joinedUsers.push(username);
                     lobbyData.joinedUserIds.push(userId);
                     lobbyData.currentSlots += 1;
 
+                    console.log(`User ${username} joined the lobby. Current Slots: ${lobbyData.currentSlots}`);
                     await updateLobbyEmbed(interaction, lobbyData);
                     await interaction.deferUpdate();
                 } else {
+                    console.log(`User ${username} is already in the match.`);
                     await interaction.reply({ content: 'You are already in the match!', flags: MessageFlags.Ephemeral });
                 }
                 break;
 
             case 'leave':
+                console.log(`User ${username} is attempting to leave the lobby.`);
                 if (lobbyData.joinedUsers.includes(username)) {
                     lobbyData.joinedUsers = lobbyData.joinedUsers.filter(user => user !== username);
                     lobbyData.joinedUserIds = lobbyData.joinedUserIds.filter(id => id !== userId);
                     lobbyData.currentSlots -= 1;
 
+                    console.log(`User ${username} left the lobby. Current Slots: ${lobbyData.currentSlots}`);
                     await updateLobbyEmbed(interaction, lobbyData);
                     await interaction.deferUpdate();
                 } else {
+                    console.log(`User ${username} is not in the match.`);
                     await interaction.reply({ content: 'You are not in the match!', flags: MessageFlags.Ephemeral });
                 }
                 break;
 
             case 'start':
+                console.log(`User ${username} is attempting to start the match.`);
                 if (lobbyData.creator !== userId) {
+                    console.log(`User ${username} is not the lobby creator. Action denied.`);
                     await interaction.reply({ content: 'Only the lobby creator can start the match!', flags: MessageFlags.Ephemeral });
                     return;
                 }
                 if (!lobbyData.started) {
                     lobbyData.started = true;
+                    console.log('Match started successfully.');
                     await updateLobbyStatus(interaction, lobbyData, 'Matchmaking Lobby (Started)');
                 } else {
+                    console.log('The match is already started.');
                     await interaction.reply({ content: 'The match is already started!', flags: MessageFlags.Ephemeral });
                 }
                 break;
 
             case 'stop':
+                console.log(`User ${username} is attempting to stop the match.`);
                 if (lobbyData.creator !== userId) {
+                    console.log(`User ${username} is not the lobby creator. Action denied.`);
                     await interaction.reply({ content: 'Only the lobby creator can stop the match!', flags: MessageFlags.Ephemeral });
                     return;
                 }
                 if (lobbyData.started) {
                     lobbyData.started = false;
+                    console.log('Match stopped successfully.');
                     await updateLobbyStatus(interaction, lobbyData, 'Matchmaking Lobby');
                 } else {
+                    console.log('The match is not started yet.');
                     await interaction.reply({ content: 'The match is not started yet!', flags: MessageFlags.Ephemeral });
                 }
                 break;
 
             default:
+                console.log(`Unknown button interaction: ${interaction.customId}`);
                 await interaction.reply({ content: 'Unknown interaction.', flags: MessageFlags.Ephemeral });
         }
     } else if (interaction.type === InteractionType.ModalSubmit) {

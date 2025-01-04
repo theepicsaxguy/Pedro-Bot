@@ -4,10 +4,13 @@ const { EmbedBuilder, ActionRowBuilder, ButtonBuilder } = require('discord.js');
 const ButtonManager = require('./ButtonManager');
 
 async function updateLobbyEmbed(interaction, lobbyData, components = []) {
+    console.log(`[INFO] Updating lobby embed for messageId: ${interaction.message.id}`);
+    console.log(`[INFO] Lobby data:`, lobbyData);
+
     const embed = EmbedBuilder.from(lobbyData.embed);
     embed.setDescription(
         `🎮 **Created by <@${lobbyData.creator}>!**\n` +
-        `📅 **Date/Time:** <t:${Math.floor(lobbyData.matchTime.getTime() / 1000)}:F>\n` +
+        `📅 **Date/Time:** <t:${lobbyData.unixTime}:F>\n` +
         `🏷 **Tags:** ${lobbyData.tags}\n` +
         `🔑 **Game Code:** ${lobbyData.gameCode}\n` +
         `📜 **Description:** ${lobbyData.description}\n` +
@@ -15,15 +18,19 @@ async function updateLobbyEmbed(interaction, lobbyData, components = []) {
         `✅ **Joined:** ${lobbyData.joinedUsers.join(', ')}`
     );
     lobbyData.embed = embed;
+
     if (interaction.message) {
         await interaction.message.edit({ embeds: [embed], components });
+        console.log(`[INFO] Message edited successfully.`);
     } else {
-        console.error('Message not found or already deleted.');
+        console.error('[ERROR] Message not found or already deleted.');
     }
 }
 
-
 async function updateLobbyStatus(interaction, lobbyData, title) {
+    console.log(`[INFO] Updating lobby status for messageId: ${interaction.message.id}`);
+    console.log(`[INFO] Lobby data being used:`, lobbyData);
+
     const embed = EmbedBuilder.from(lobbyData.embed);
     embed.setTitle(title);
     lobbyData.embed = embed;
@@ -37,14 +44,10 @@ async function updateLobbyStatus(interaction, lobbyData, title) {
         components.push(ButtonManager.createButtonRow(additionalButtons));
     }
 
-    try {
-        await interaction.message.edit({ embeds: [embed], components });
-        // Save the updated lobby data
-        lobbyManager.setLobby(interaction.message.id, lobbyData);
-    } catch (error) {
-        console.error('Failed to edit message:', error);
-    }
+    await interaction.message.edit({ embeds: [embed], components });
+    console.log(`[INFO] Message edited with new status.`);
 }
+
 
 module.exports = {
     updateLobbyEmbed,

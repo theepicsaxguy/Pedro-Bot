@@ -120,8 +120,9 @@ module.exports = {
         });
 
 
-        // Store lobby data
+        // Store lobby data with original messageId
         lobbyManager.setLobby(message.id, {
+            originalMessageId: interaction.message.id,
             joinedUsers: [username],
             joinedUserIds: [creator],
             started: false,
@@ -134,6 +135,7 @@ module.exports = {
             description,
             embed
         });
+
 
         // Schedule the match start based on matchTime
         schedule.scheduleJob(matchTime, async () => {
