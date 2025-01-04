@@ -1,5 +1,6 @@
 const { Client, GatewayIntentBits, Collection } = require('discord.js');
 const { REST, Routes } = require('discord.js');
+const ButtonManager = require('./utils/ButtonManager');
 
 
 require('dotenv').config();
@@ -43,18 +44,28 @@ client.once('ready', () => {
 
 // Event: Interaction create
 client.on('interactionCreate', async interaction => {
-    if (!interaction.isCommand()) return;
+    if (interaction.isCommand()) {
+        // Command handling logic
+        const command = client.commands.get(interaction.commandName);
+        if (!command) return;
+        try {
+            await command.execute(interaction);
+        } catch (error) {
+            console.error('Error executing command:', error);
+            await interaction.reply({ content: 'There was an error executing that command.', ephemeral: true });
+        }
+    } else if (interaction.isButton()) {
+        // Button handling logic
+        const customId = interaction.customId;
 
-    const command = client.commands.get(interaction.commandName);
-    if (!command) return;
-
-    try {
-        await command.execute(interaction);
-    } catch (error) {
-        console.error('Error executing command:', error);
-        await interaction.reply({ content: 'There was an error executing that command.', ephemeral: true });
+        if (customId === 'join') {
+            await interaction.reply(`${interaction.user.username} has joined the match!`);
+        } else if (customId === 'start') {
+            await interaction.reply('The match has started!');
+        }
     }
 });
+
 
 // Login to Discord
 client.login(TOKEN);

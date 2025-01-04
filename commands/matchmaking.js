@@ -1,4 +1,5 @@
-const { SlashCommandBuilder } = require('discord.js');
+const ButtonManager = require('../utils/ButtonManager');
+const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -36,19 +37,26 @@ module.exports = {
                 .setDescription('Provide a description for the match')
                 .setRequired(false)
         ),
-    async execute(interaction) {
-        const time = interaction.options.getString('time');
-        const tags = interaction.options.getString('tags');
-        const gameCode = interaction.options.getString('game_code');
-        const description = interaction.options.getString('description') || 'No description provided';
-
-        await interaction.reply(
-            `🎮 **Matchmaking Lobby Created by ${interaction.user.username}!** 🎮\n` +
-            `📅 **Date/Time:** ${time}\n` +
-            `🏷 **Tags:** ${tags}\n` +
-            `🔑 **Game Code:** ${gameCode}\n` +
-            `📜 **Description:** ${description}\n` +
-            `👥 **Slots Available:** 1/6`
-        );
-    },
-};
+        async execute(interaction) {
+            const time = interaction.options.getString('time');
+            const tags = interaction.options.getString('tags');
+            const gameCode = interaction.options.getString('game_code');
+            const description = interaction.options.getString('description') || 'No description provided';
+    
+            const embed = new EmbedBuilder()
+                .setTitle('Matchmaking Lobby')
+                .setDescription(
+                    `🎮 **Created by ${interaction.user.username}!**\n` +
+                    `📅 **Date/Time:** ${time}\n` +
+                    `🏷 **Tags:** ${tags}\n` +
+                    `🔑 **Game Code:** ${gameCode}\n` +
+                    `📜 **Description:** ${description}\n` +
+                    `👥 **Slots Available:** 1/6`
+                )
+                .setColor(0x00AE86);
+    
+            const row = ButtonManager.createButtonRow(['join', 'start']);
+            await interaction.reply({ embeds: [embed], components: [row] });
+        },
+    };
+    
