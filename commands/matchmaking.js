@@ -1,7 +1,6 @@
-const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, MessageFlags } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, MessageFlags, ModalBuilder, TextInputBuilder, TextInputStyle } = require('discord.js');
 const ButtonManager = require('../utils/ButtonManager');
 const lobbyManager = require('../utils/lobbyManager');
-const schedule = require('node-schedule'); // For scheduling
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -56,18 +55,19 @@ module.exports = {
             return;
         }
 
-        if (description.length > 200) { // Example limit
+        if (description.length > 200) {
             await interaction.editReply({ content: 'Description is too long. Please limit to 200 characters.', flags: MessageFlags.Ephemeral });
             return;
         }
 
         let matchTime;
+        const now = new Date();
         if (timeInput === 'now') {
-            matchTime = new Date();
+            matchTime = now;
         } else if (timeInput === '1_hour') {
-            matchTime = new Date(Date.now() + 60 * 60 * 1000);
+            matchTime = new Date(now.getTime() + 60 * 60 * 1000);
         } else if (timeInput === 'tomorrow') {
-            matchTime = new Date();
+            matchTime = new Date(now);
             matchTime.setDate(matchTime.getDate() + 1);
         } else if (timeInput === 'custom') {
             // Handle custom time via modal
@@ -99,30 +99,21 @@ module.exports = {
                 `🏷 **Tags:** ${tags}\n` +
                 `🔑 **Game Code:** ${gameCode}\n` +
                 `📜 **Description:** ${description}\n` +
-                `👥 **Slots Available:** 1/6\n✅ **Joined:** ${username}`
+                `👥 **Slots Available:** 1/6\n` +
+                `✅ **Joined:** ${username}`
             )
             .setColor(0x00AE86);
 
-        // Public lobby message with Join/Leave buttons
+        // Public lobby message with Join/Leave buttons only
         const publicComponents = [
             ButtonManager.createButtonRow(['join', 'leave'])
         ];
         const message = await interaction.editReply({ embeds: [embed], components: publicComponents });
 
-        // Private ephemeral message for the match creator with Start/Stop buttons
-        const privateComponents = [
-            ButtonManager.createButtonRow(['start', 'stop'])
-        ];
-        await interaction.followUp({
-            content: 'Here are your lobby controls:',
-            components: privateComponents,
-            ephemeral: true
-        });
+        // === REMOVED EPHEMERAL MESSAGE & START/STOP BUTTONS ===
 
-
-        // Store lobby data with original messageId
+        // Store lobby data with the correct message.id
         lobbyManager.setLobby(message.id, {
-            originalMessageId: interaction.message.id,
             joinedUsers: [username],
             joinedUserIds: [creator],
             started: false,
@@ -136,20 +127,8 @@ module.exports = {
             embed
         });
 
-
-        // Schedule the match start based on matchTime
-        schedule.scheduleJob(matchTime, async () => {
-            const lobbyData = lobbyManager.getLobby(message.id);
-            if (lobbyData && !lobbyData.started) {
-                lobbyData.started = true;
-                lobbyData.embed.setTitle('Matchmaking Lobby (Started)');
-                await message.edit({
-                    embeds: [lobbyData.embed],
-                    components: [
-                        ButtonManager.createButtonRow(['stop'])
-                    ]
-                });
-            }
-        });
+        // Centralized scheduling call
+        // We'll let the main bot file handle the actual scheduleJob
+        interaction.client.scheduleLobbyStart(message.id, matchTime, message);
     }
 };

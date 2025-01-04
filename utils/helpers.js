@@ -19,8 +19,11 @@ async function updateLobbyEmbed(interaction, lobbyData, components = []) {
     );
     lobbyData.embed = embed;
 
+    // If provided, use custom components; else keep the existing ones
+    const finalComponents = components.length > 0 ? components : interaction.message.components;
+
     if (interaction.message) {
-        await interaction.message.edit({ embeds: [embed], components });
+        await interaction.message.edit({ embeds: [embed], components: finalComponents });
         console.log(`[INFO] Message edited successfully.`);
     } else {
         console.error('[ERROR] Message not found or already deleted.');
@@ -35,19 +38,14 @@ async function updateLobbyStatus(interaction, lobbyData, title) {
     embed.setTitle(title);
     lobbyData.embed = embed;
 
+    // We only keep join/leave now
     const components = [
         ButtonManager.createButtonRow(['join', 'leave']),
     ];
 
-    if (lobbyData.creator === interaction.user.id) {
-        const additionalButtons = lobbyData.started ? ['stop'] : ['start', 'stop'];
-        components.push(ButtonManager.createButtonRow(additionalButtons));
-    }
-
     await interaction.message.edit({ embeds: [embed], components });
     console.log(`[INFO] Message edited with new status.`);
 }
-
 
 module.exports = {
     updateLobbyEmbed,

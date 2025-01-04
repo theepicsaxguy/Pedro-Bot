@@ -18,20 +18,10 @@ class ButtonManager {
             .setLabel('Leave')
             .setStyle(ButtonStyle.Danger);
 
-        const startButton = new ButtonBuilder()
-            .setCustomId('start')
-            .setLabel('Start')
-            .setStyle(ButtonStyle.Primary);
-
-        const stopButton = new ButtonBuilder()
-            .setCustomId('stop')
-            .setLabel('Stop')
-            .setStyle(ButtonStyle.Secondary);
+        // === REMOVED START AND STOP BUTTONS ===
 
         this.buttons.set('join', joinButton);
         this.buttons.set('leave', leaveButton);
-        this.buttons.set('start', startButton);
-        this.buttons.set('stop', stopButton);
     }
 
     getButton(buttonName) {
@@ -51,4 +41,3 @@ class ButtonManager {
 }
 
 module.exports = new ButtonManager();
-

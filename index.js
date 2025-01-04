@@ -13,6 +13,24 @@ const CLIENT_ID = process.env.CLIENT_ID;
 const GUILD_ID = process.env.GUILD_ID;
 client.commands = new Collection();
 
+// === CENTRALIZED SCHEDULING FUNCTION ===
+client.scheduleLobbyStart = function (lobbyId, matchTime, message) {
+    schedule.scheduleJob(matchTime, async () => {
+        const lobbyData = lobbyManager.getLobby(lobbyId);
+        if (lobbyData && !lobbyData.started) {
+            lobbyData.started = true;
+            // After starting, we just keep the join/leave buttons on the message (no start/stop).
+            lobbyData.embed.setTitle('Matchmaking Lobby (Started)');
+            await message.edit({
+                embeds: [lobbyData.embed],
+                components: [
+                    ButtonManager.createButtonRow(['join', 'leave'])
+                ]
+            });
+        }
+    });
+};
+
 // Loading command files
 const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
 for (const file of commandFiles) {
@@ -56,10 +74,10 @@ client.on('interactionCreate', async interaction => {
         const messageId = interaction.message.id;
         const lobbyData = lobbyManager.getLobby(messageId);
 
-        console.log(`Button interaction detected. User: ${interaction.user.tag}, Button ID: ${interaction.customId}`);
+        console.log(`[INFO] Button interaction detected. User: ${interaction.user.tag}, Button ID: ${interaction.customId}`);
 
         if (!lobbyData) {
-            console.log('Lobby data not found.');
+            console.log('[INFO] Lobby data not found.');
             await interaction.reply({ content: 'Lobby data not found.', flags: MessageFlags.Ephemeral });
             return;
         }
@@ -100,39 +118,7 @@ client.on('interactionCreate', async interaction => {
                 }
                 break;
 
-            case 'start':
-                console.log(`User ${username} is attempting to start the match.`);
-                if (lobbyData.creator !== userId) {
-                    console.log(`User ${username} is not the lobby creator. Action denied.`);
-                    await interaction.reply({ content: 'Only the lobby creator can start the match!', flags: MessageFlags.Ephemeral });
-                    return;
-                }
-                if (!lobbyData.started) {
-                    lobbyData.started = true;
-                    console.log('Match started successfully.');
-                    await updateLobbyStatus(interaction, lobbyData, 'Matchmaking Lobby (Started)');
-                } else {
-                    console.log('The match is already started.');
-                    await interaction.reply({ content: 'The match is already started!', flags: MessageFlags.Ephemeral });
-                }
-                break;
-
-            case 'stop':
-                console.log(`User ${username} is attempting to stop the match.`);
-                if (lobbyData.creator !== userId) {
-                    console.log(`User ${username} is not the lobby creator. Action denied.`);
-                    await interaction.reply({ content: 'Only the lobby creator can stop the match!', flags: MessageFlags.Ephemeral });
-                    return;
-                }
-                if (lobbyData.started) {
-                    lobbyData.started = false;
-                    console.log('Match stopped successfully.');
-                    await updateLobbyStatus(interaction, lobbyData, 'Matchmaking Lobby');
-                } else {
-                    console.log('The match is not started yet.');
-                    await interaction.reply({ content: 'The match is not started yet!', flags: MessageFlags.Ephemeral });
-                }
-                break;
+            // === REMOVED start & stop CASES ===
 
             default:
                 console.log(`Unknown button interaction: ${interaction.customId}`);
@@ -142,7 +128,7 @@ client.on('interactionCreate', async interaction => {
         if (interaction.customId === 'customTimeModal') {
             const customTimeInput = interaction.fields.getTextInputValue('customTime');
             const messageId = interaction.message.id;
-            lobbyManager.setLobby(messageId, lobbyData);
+            // Minimal fix: correct usage to find existing lobby data
             const lobbyData = lobbyManager.getLobby(messageId);
 
             if (!lobbyData) {
@@ -163,19 +149,8 @@ client.on('interactionCreate', async interaction => {
             // Update embed with custom time
             await updateLobbyEmbed(interaction, lobbyData);
 
-            // Schedule the match start
-            schedule.scheduleJob(customTime, async () => {
-                if (lobbyData && !lobbyData.started) {
-                    lobbyData.started = true;
-                    lobbyData.embed.setTitle('Matchmaking Lobby (Started)');
-                    await interaction.message.edit({
-                        embeds: [lobbyData.embed],
-                        components: [
-                            ButtonManager.createButtonRow(['stop'])
-                        ]
-                    });
-                }
-            });
+            // Centralized scheduling
+            client.scheduleLobbyStart(messageId, customTime, interaction.message);
 
             await interaction.reply({ content: 'Custom time set successfully!', flags: MessageFlags.Ephemeral });
         }
