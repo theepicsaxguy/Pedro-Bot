@@ -39,6 +39,8 @@ async function updateLobbyStatus(interaction, lobbyData, title) {
 
     try {
         await interaction.message.edit({ embeds: [embed], components });
+        // Save the updated lobby data
+        lobbyManager.setLobby(interaction.message.id, lobbyData);
     } catch (error) {
         console.error('Failed to edit message:', error);
     }
