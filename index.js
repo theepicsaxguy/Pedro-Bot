@@ -57,14 +57,44 @@ client.on('interactionCreate', async interaction => {
     } else if (interaction.isButton()) {
         // Button handling logic
         const customId = interaction.customId;
+        const message = await interaction.message.fetch(); // Fetch the original message
+        const lobbyData = message.lobbyData;
+
+        if (!lobbyData) {
+            await interaction.reply({ content: 'Lobby data not found.', ephemeral: true });
+            return;
+        }
 
         if (customId === 'join') {
-            await interaction.reply(`${interaction.user.username} has joined the match!`);
+            if (!lobbyData.joinedUsers.includes(interaction.user.username)) {
+                lobbyData.joinedUsers.push(interaction.user.username);
+                const embed = message.embeds[0];
+                embed.setDescription(
+                    embed.description.replace(
+                        /👥 \*\*Slots Available:\*\* \d+\/\d+/,
+                        `👥 **Slots Available:** ${lobbyData.joinedUsers.length}/${lobbyData.totalSlots}`
+                    ) +
+                    `\n✅ **Joined:** ${lobbyData.joinedUsers.join(', ')}`
+                );
+                await message.edit({ embeds: [embed] });
+                await interaction.reply({ content: 'You have joined the match!', ephemeral: true });
+            } else {
+                await interaction.reply({ content: 'You are already in the match!', ephemeral: true });
+            }
         } else if (customId === 'start') {
-            await interaction.reply('The match has started!');
+            if (!lobbyData.started) {
+                lobbyData.started = true;
+                const embed = message.embeds[0];
+                embed.setTitle('Matchmaking Lobby (Started)');
+                await message.edit({ embeds: [embed] });
+                await interaction.reply({ content: 'The match has started!', ephemeral: true });
+            } else {
+                await interaction.reply({ content: 'The match is already started!', ephemeral: true });
+            }
         }
     }
 });
+
 
 
 // Login to Discord
