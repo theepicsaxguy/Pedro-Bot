@@ -1,67 +1,65 @@
-# Matchmaking Discord Bot
+# Matchmaking Discord Bot Setup Guide
 
-## File: index.js
-```javascript
-const { Client, Intents, REST, Routes, Collection } = require('discord.js');
-require('dotenv').config();
-const fs = require('fs');
+## Overview
+This guide will walk you through setting up and running the Matchmaking Discord Bot. The bot is designed to help users create matchmaking lobbies using slash commands in a Discord server. Follow the steps below to set up the bot on your local machine and deploy it to your Discord server.
 
-// Initialize Discord Client
-const client = new Client({ intents: [Intents.FLAGS.GUILDS] });
+---
 
-// Load environment variables
-const TOKEN = process.env.DISCORD_TOKEN;
-const CLIENT_ID = process.env.CLIENT_ID;
-const GUILD_ID = process.env.GUILD_ID;
+## Prerequisites
+Make sure you have the following installed:
+- [Node.js](https://nodejs.org/) (version 16 or higher)
+- A Discord account
+- Access to the [Discord Developer Portal](https://discord.com/developers/applications)
 
-// Command collection to dynamically load commands
-client.commands = new Collection();
+---
 
-// Load command files
-const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
-for (const file of commandFiles) {
-    const command = require(`./commands/${file}`);
-    client.commands.set(command.data.name, command);
-}
-
-// Register slash commands
-const commands = client.commands.map(command => command.data.toJSON());
-const rest = new REST({ version: '10' }).setToken(TOKEN);
-(async () => {
-    try {
-        console.log('Started refreshing application (/) commands.');
-        await rest.put(Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID), { body: commands });
-        console.log('Successfully reloaded application (/) commands.');
-    } catch (error) {
-        console.error('Error refreshing application (/) commands:', error);
-    }
-})();
-
-// Event: Bot ready
-client.once('ready', () => {
-    console.log(`Logged in as ${client.user.tag}!`);
-});
-
-// Event: Interaction create
-client.on('interactionCreate', async interaction => {
-    if (!interaction.isCommand()) return;
-
-    const command = client.commands.get(interaction.commandName);
-    if (!command) return;
-
-    try {
-        await command.execute(interaction);
-    } catch (error) {
-        console.error('Error executing command:', error);
-        await interaction.reply({ content: 'There was an error executing that command.', ephemeral: true });
-    }
-});
-
-// Login to Discord
-client.login(TOKEN);
+## Folder Structure
+```
+project-root/
+├── commands/
+│   └── matchmaking.js
+├── .env
+├── index.js
+├── package.json
+└── README.md
 ```
 
-## File: commands/matchmaking.js
+---
+
+## Step 1: Clone the Repository
+Clone the bot's repository to your local machine:
+```bash
+git clone https://github.com/your-username/your-repo.git
+cd your-repo
+```
+
+---
+
+## Step 2: Install Dependencies
+Run the following command to install the required packages:
+```bash
+npm install
+```
+
+---
+
+## Step 3: Create the `.env` File
+Create a `.env` file in the root directory of your project and add your bot's credentials:
+```
+DISCORD_TOKEN=your-discord-bot-token
+CLIENT_ID=your-client-id
+GUILD_ID=your-guild-id
+```
+- **DISCORD_TOKEN**: The bot token from the Discord Developer Portal.
+- **CLIENT_ID**: The client ID of your bot application.
+- **GUILD_ID**: The ID of the Discord server (guild) where the bot will be used.
+
+---
+
+## Step 4: Create the `commands` Folder and Add Commands
+Create a `commands` folder in the root directory and add a `matchmaking.js` file with your matchmaking command logic.
+
+Example command file (`commands/matchmaking.js`):
 ```javascript
 const { SlashCommandBuilder } = require('discord.js');
 
@@ -119,9 +117,63 @@ module.exports = {
 };
 ```
 
-## File: .env (Example)
+---
+
+## Step 5: Run the Bot
+Start the bot using the following command:
+```bash
+node index.js
 ```
-DISCORD_TOKEN=your-discord-bot-token
-CLIENT_ID=your-client-id
-GUILD_ID=your-guild-id
+
+The bot will log in and register the `/matchmaking` command with your Discord server.
+
+---
+
+## Step 6: Invite the Bot to Your Server
+1. Go to the [Discord Developer Portal](https://discord.com/developers/applications) and select your bot application.
+2. Navigate to the **OAuth2** tab.
+3. Under **OAuth2 URL Generator**, select the following scopes:
+   - `bot`
+   - `applications.commands`
+4. Under **Bot Permissions**, select the necessary permissions (e.g., `Send Messages`, `Use Slash Commands`).
+5. Copy the generated URL and open it in your browser.
+6. Select the server where you want to add the bot.
+
+---
+
+## Step 7: Test the Bot
+In your Discord server, type:
 ```
+/matchmaking
+```
+Follow the prompts to create a matchmaking lobby.
+
+---
+
+## Adding New Commands
+To add new commands:
+1. Create a new `.js` file in the `commands` folder.
+2. Define the command using the `SlashCommandBuilder`.
+3. Implement the `execute` function to handle the interaction.
+4. Restart the bot to register the new command.
+
+Example new command (`commands/ping.js`):
+```javascript
+const { SlashCommandBuilder } = require('discord.js');
+
+module.exports = {
+    data: new SlashCommandBuilder()
+        .setName('ping')
+        .setDescription('Replies with Pong!'),
+    async execute(interaction) {
+        await interaction.reply('Pong!');
+    },
+};
+```
+
+---
+
+## Notes
+- Ensure the bot has the required permissions in your server.
+- Use logging and monitoring tools to keep track of the bot's performance and errors.
+- Regularly update your bot's dependencies and commands to keep it running smoothly.

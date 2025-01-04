@@ -1,0 +1,16 @@
+{
+  "name": "pedro-bot",
+  "version": "1.0.0",
+  "description": "## Overview This guide will walk you through setting up and running the Matchmaking Discord Bot. The bot is designed to help users create matchmaking lobbies using slash commands in a Discord server. Follow the steps below to set up the bot on your local machine and deploy it to your Discord server.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "discord.js": "^14.0.3",
+    "dotenv": "^16.0.3"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

@@ -1,9 +1,12 @@
-const { Client, Intents, REST, Routes, Collection } = require('discord.js');
+const { Client, GatewayIntentBits, Collection } = require('discord.js');
+const { REST, Routes } = require('discord.js');
+
+
 require('dotenv').config();
 const fs = require('fs');
 
 // Initialize Discord Client
-const client = new Client({ intents: [Intents.FLAGS.GUILDS] });
+const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
 // Load environment variables
 const TOKEN = process.env.DISCORD_TOKEN;
