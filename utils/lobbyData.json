@@ -276,5 +276,27 @@
       "color": 44678
     },
     "threadId": "1325247172568154165"
+  },
+  "1325247656469205175": {
+    "gameCode": "1111",
+    "creator": "407313152238419969",
+    "unixTime": 1736034063,
+    "tags": "casual",
+    "joinedUsers": [
+      "saxguy007"
+    ],
+    "totalSlots": 6,
+    "description": "test",
+    "started": false,
+    "matchTime": "2025-01-04T23:41:03.351Z",
+    "joinedUserIds": [
+      "407313152238419969"
+    ],
+    "embed": {
+      "title": "1111",
+      "description": "\n**Host:** <@407313152238419969>\n**Time:** <t:1736034063:t>\n**Tags:** casual\n**Slots Available:** 1/6\n**Joined:** saxguy007\n**Description:** test\n\nNotes: Running missions in a lobby, will start at designated time (auto-converts to your time)\nInfo and questions in thread.\n\nPlease put the corresponding tick for attendance;\n\nCc: @Matchmaking\n",
+      "color": 44678
+    },
+    "threadId": "1325247656469205175"
   }
 }
