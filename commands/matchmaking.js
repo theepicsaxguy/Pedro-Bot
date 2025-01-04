@@ -84,13 +84,10 @@ module.exports = {
             new ButtonBuilder().setCustomId('leave').setLabel('Leave').setStyle(ButtonStyle.Danger)
         )];
 
-        if (timeInput === 'now' || matchTime <= new Date()) {
-            components = [new ActionRowBuilder().addComponents(
-                new ButtonBuilder().setCustomId('stop').setLabel('Stop').setStyle(ButtonStyle.Secondary)
-            )];
-        } else if (creator === interaction.user.id) {
+        if (creator === interaction.user.id) {
             components.push(new ActionRowBuilder().addComponents(
-                new ButtonBuilder().setCustomId('start').setLabel('Start').setStyle(ButtonStyle.Success)
+                new ButtonBuilder().setCustomId('start').setLabel('Start').setStyle(ButtonStyle.Success),
+                new ButtonBuilder().setCustomId('stop').setLabel('Stop').setStyle(ButtonStyle.Secondary)
             ));
         }
 

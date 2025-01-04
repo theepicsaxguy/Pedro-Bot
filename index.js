@@ -1,4 +1,4 @@
-const { Client, GatewayIntentBits, Collection, InteractionType, EmbedBuilder } = require('discord.js');
+const { Client, GatewayIntentBits, MessageFlags, Collection, InteractionType, EmbedBuilder } = require('discord.js');
 const { REST, Routes } = require('discord.js');
 const ButtonManager = require('./utils/ButtonManager');
 require('dotenv').config();
@@ -15,18 +15,23 @@ for (const file of commandFiles) {
     const command = require(`./commands/${file}`);
     client.commands.set(command.data.name, command);
 }
-
-const commands = client.commands.map(command => command.data.toJSON());
 const rest = new REST({ version: '10' }).setToken(TOKEN);
 (async () => {
     try {
-        console.log('Started refreshing application (/) commands.');
+        console.log('Removing existing commands...');
+        const existingCommands = await rest.get(Routes.applicationCommands(CLIENT_ID));
+        for (const command of existingCommands) {
+            await rest.delete(`${Routes.applicationCommands(CLIENT_ID)}/${command.id}`);
+        }
+        console.log('Registering new commands...');
+        const commands = client.commands.map(command => command.data.toJSON());
         await rest.put(Routes.applicationCommands(CLIENT_ID), { body: commands });
         console.log('Successfully reloaded application (/) commands.');
     } catch (error) {
         console.error('Error refreshing application (/) commands:', error);
     }
 })();
+
 
 global.lobbyMap = new Map();
 
@@ -42,14 +47,15 @@ client.on('interactionCreate', async interaction => {
             await command.execute(interaction);
         } catch (error) {
             console.error('Error executing command:', error);
-            await interaction.reply({ content: 'There was an error executing that command.', ephemeral: true });
+            await interaction.reply({ content: 'There was an error executing that command.', flags: MessageFlags.Ephemeral });
+
         }
     } else if (interaction.type === InteractionType.MessageComponent) {
         const messageId = interaction.message.id;
         const lobbyData = global.lobbyMap.get(messageId);
 
         if (!lobbyData) {
-            await interaction.reply({ content: 'Lobby data not found.', ephemeral: true });
+            await interaction.reply({ content: 'Lobby data not found.', flags: MessageFlags.Ephemeral });
             return;
         }
 
