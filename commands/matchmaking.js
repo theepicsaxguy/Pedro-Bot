@@ -1,4 +1,5 @@
-const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+// Updated matchmaking.js with the latest API recommendations
+const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const ButtonManager = require('../utils/ButtonManager');
 
 module.exports = {
@@ -32,12 +33,13 @@ module.exports = {
                 .setRequired(false)
         ),
     async execute(interaction) {
-        let timeInput = interaction.options.getString('time');
+        await interaction.deferReply(); // Deferring the reply to handle interaction timing
+
+        const timeInput = interaction.options.getString('time');
         const tags = interaction.options.getString('tags');
         const gameCode = interaction.options.getString('game_code');
         const description = interaction.options.getString('description') || 'No description provided';
 
-        // Calculate time based on selected option
         let matchTime;
         if (timeInput === 'now') {
             matchTime = new Date();
@@ -47,14 +49,12 @@ module.exports = {
             matchTime = new Date();
             matchTime.setDate(matchTime.getDate() + 1);
         } else if (timeInput === 'custom') {
-            // For custom time, prompt user to enter it manually (handled elsewhere if needed)
-            await interaction.reply({ content: 'Please enter a custom time in the format YYYY-MM-DD HH:MM.', ephemeral: true });
+            await interaction.editReply({ content: 'Please enter a custom time in the format YYYY-MM-DD HH:MM.', ephemeral: true });
             return;
         }
 
         const unixTime = Math.floor(matchTime.getTime() / 1000);
 
-        // Create initial embed
         const embed = new EmbedBuilder()
             .setTitle('Matchmaking Lobby')
             .setDescription(
@@ -67,17 +67,23 @@ module.exports = {
             )
             .setColor(0x00AE86);
 
-        // Create buttons
-        const row = ButtonManager.createButtonRow(['join', 'start']);
+        const row = new ActionRowBuilder().addComponents(
+            new ButtonBuilder()
+                .setCustomId('join')
+                .setLabel('Join')
+                .setStyle(ButtonStyle.Primary),
+            new ButtonBuilder()
+                .setCustomId('start')
+                .setLabel('Start')
+                .setStyle(ButtonStyle.Success)
+        );
 
-        // Send the initial embed with buttons
-        const message = await interaction.reply({ embeds: [embed], components: [row], fetchReply: true });
+        const message = await interaction.editReply({ embeds: [embed], components: [row] });
 
-        // Store lobby data in the message for future updates
-        message.lobbyData = {
+        global.lobbyMap.set(message.id, {
             joinedUsers: [],
             started: false,
             totalSlots: 6
-        };
+        });
     }
 };
