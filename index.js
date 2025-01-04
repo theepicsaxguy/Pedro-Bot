@@ -100,6 +100,15 @@ client.on('interactionCreate', async interaction => {
                 break;
 
             case 'leave':
+                // Remove user from the thread & announce departure (without tagging)
+                if (lobbyData.threadId) {
+                    const thread = interaction.channel.threads.cache.get(lobbyData.threadId);
+                    if (thread) {
+                        await thread.members.remove(userId);
+                        await thread.send(`${username} has left the match.`);
+                    }
+                }
+
                 if (lobbyData.joinedUsers.includes(username)) {
                     lobbyData.joinedUsers = lobbyData.joinedUsers.filter(user => user !== username);
                     lobbyData.joinedUserIds = lobbyData.joinedUserIds.filter(id => id !== userId);
