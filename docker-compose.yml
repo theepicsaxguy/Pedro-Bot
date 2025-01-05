@@ -1,12 +1,10 @@
 services:
   discord-bot:
-    image: node:20
-    working_dir: /app
+    build:
+      context: .
+      dockerfile: Dockerfile
     environment:
       - DISCORD_TOKEN=${DISCORD_TOKEN}
       - CLIENT_ID=${CLIENT_ID}
       - GUILD_ID=${GUILD_ID}
-    volumes:
-      - /docker/portainer/app:/app
-    command: npm start
     restart: always
