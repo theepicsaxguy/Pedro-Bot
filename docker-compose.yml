@@ -10,6 +10,7 @@ services:
         source: /etc/pedro-bot
         target: /app/data
     restart: always
+    pull_policy: build
     environment:
       - DISCORD_TOKEN=${DISCORD_TOKEN}
       - CLIENT_ID=${CLIENT_ID}
