@@ -7,8 +7,6 @@ services:
       - CLIENT_ID=${CLIENT_ID}
       - GUILD_ID=${GUILD_ID}
     volumes:
-      - .:/app
-    ports:
-      - '3000:3000'
+      - ./app:/app
     command: npm start
     restart: always
