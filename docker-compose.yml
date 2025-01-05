@@ -4,10 +4,10 @@ services:
     build: https://github.com/theepicsaxguy/Pedro-Bot.git#main
     volumes:
       - type: bind
-        source: /var/log/pedro-bot/cloak
+        source: /var/log/pedro-bot
         target: /app/logs
       - type: bind
-        source: /etc/pedro-bot/cloak
+        source: /etc/pedro-bot
         target: /app/data
     restart: always
     environment:
