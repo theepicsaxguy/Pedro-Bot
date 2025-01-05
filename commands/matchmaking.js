@@ -94,15 +94,26 @@ module.exports = {
                 .setCustomId('customTimeModal')
                 .setTitle('Set Custom Time');
 
+             // NEW: Two fields: date + time
+            const dateInput = new TextInputBuilder()
+                .setCustomId('customDate')
+                .setLabel('Enter date (YYYY-MM-DD)')
+                .setStyle(TextInputStyle.Short)
+                .setPlaceholder('2025-01-04')
+                 .setRequired(true);
+
             const timeInputField = new TextInputBuilder()
                 .setCustomId('customTime')
-                .setLabel('Enter custom time (YYYY-MM-DD HH:MM)')
+                .setLabel('Enter time (HH:MM)')
                 .setStyle(TextInputStyle.Short)
-                .setPlaceholder('2025-01-04 15:30')
-                .setRequired(true);
+                .setPlaceholder('15:30')
+                .setRequired(true)
 
-            const firstActionRow = new ActionRowBuilder().addComponents(timeInputField);
+            const firstActionRow = new ActionRowBuilder().addComponents(dateInput);
+            const secondActionRow = new ActionRowBuilder().addComponents(timeInputField);
+            
             modal.addComponents(firstActionRow);
+            modal.addComponents(secondActionRow);
 
             await interaction.showModal(modal);
             return;

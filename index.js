@@ -168,7 +168,9 @@ client.on('interactionCreate', async interaction => {
 
     else if (interaction.type === InteractionType.ModalSubmit) {
         if (interaction.customId === 'customTimeModal') {
-            const customTimeInput = interaction.fields.getTextInputValue('customTime');
+            const customDate = interaction.fields.getTextInputValue('customDate');
+            const customTime = interaction.fields.getTextInputValue('customTime');
+            const customDateTimeString = `${customDate} ${customTime}`;
             const messageId = interaction.message.id;
             const lobbyData = lobbyManager.getLobby(messageId);
 
@@ -182,8 +184,10 @@ client.on('interactionCreate', async interaction => {
                 return;
             }
 
-            const customTime = new Date(customTimeInput);
-            if (isNaN(customTime)) {
+            const parsedDate = new Date(customDateTimeString);
+
+            if (isNaN(parsedDate)) {
+
                 // FIRST ACK -> ephemeral reply and return
                 await interaction.reply({
                     content: 'Invalid date format. Please use YYYY-MM-DD HH:MM.',
@@ -194,10 +198,11 @@ client.on('interactionCreate', async interaction => {
             }
 
             // Update data and embed
-            lobbyData.matchTime = customTime;
-            lobbyData.unixTime = Math.floor(customTime.getTime() / 1000);
+            lobbyData.matchTime = parsedDate;
+            lobbyData.unixTime = Math.floor(parsedDate.getTime() / 1000);
+
             await updateLobbyEmbed(interaction, lobbyData);
-            client.scheduleLobbyStart(messageId, customTime, interaction.message);
+            client.scheduleLobbyStart(messageId, parsedDate, interaction.message);
 
             // FIRST ACK -> ephemeral reply
             await interaction.reply({
