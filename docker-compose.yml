@@ -1,6 +1,6 @@
 services:
   pedro-bot:
-    container_name: pedro
+    container_name: pedro-bot
     build: https://github.com/theepicsaxguy/Pedro-Bot.git#main
     volumes:
       - type: bind
