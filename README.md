@@ -1,365 +1,193 @@
-Pedro-Bot
+# Pedro-Bot
 
-Pedro-Bot is a Discord bot focused on two core features:
+Pedro-Bot is a Discord bot with two core features:
+1. **Matchmaking** (organizing game lobbies with threads, join/leave buttons, etc.).
+2. **Leveling** (assigning XP for messages and granting roles when users level up).
 
-1. Matchmaking: Creating and managing lobbies for missions or games.
-
-
-2. Leveling System: Awarding XP to users based on their messages, assigning roles and announcing level-ups.
-
-
-
-It uses MongoDB for data persistence (via Mongoose) and supports Docker-based deployment.
-
+Below is a detailed breakdown of the repository’s structure, how each component works, and how developers can extend it further.
 
 ---
 
-Table of Contents
-
-1. Project Structure
-
-
-2. Setup & Configuration
-
-
-3. Running Locally
-
-
-4. Docker & Docker Compose
-
-
-5. Environment Variables
-
-
-6. Commands Overview
-
-
-7. Matchmaking Features
-
-
-8. Leveling Features
-
-
-9. Adding New Commands
-
-
-10. Contributing
-
-
-
+## Table of Contents
+1. [Project Structure](#project-structure)
+2. [Matchmaking Feature](#matchmaking-feature)
+3. [Leveling Feature](#leveling-feature)
+4. [Environment Variables](#environment-variables)
+5. [How to Run via Docker Compose](#how-to-run-via-docker-compose)
+6. [Adding New Features](#adding-new-features)
+7. [Reusing Functions and Avoiding Duplicates](#reusing-functions-and-avoiding-duplicates)
 
 ---
 
-Project Structure
+## Project Structure
 
-A brief description of key files and directories:
+Pedro-Bot/ ├── commands/ │   ├── matchmaking/ │   │   ├── helpers.js           # Utilities to build/update matchmaking embeds │   │   ├── lobbyManager.js      # Manages lobby data in Mongo (was originally file-based) │   │   └── matchmaking.js       # The /matchmaking command logic (creates a new lobby post) │   ├── levels/ │   │   ├── levelsManager.js     # Core XP logic: awarding XP, checking level-ups, assigning roles │   │   ├── levelUtils.js        # XP / Level formulas (xpRequiredForLevel, etc.) │   │   └── level.js             # The /level command that shows a user's current XP/level │   └── [other-command].js       # Potential future commands, each file exports a SlashCommand ├── models/ │   ├── Lobby.js                 # Mongoose model for storing matchmaking lobbies │   └── UserXP.js                # Mongoose model for storing user XP & level ├── utils/ │   ├── ButtonManager.js         # Generic button creation/management (JOIN/LEAVE, etc.) │   └── database.js              # Mongoose connect() logic shared across the project ├── .env                         # Environment variables (tokens, MONGO_URI, etc.) ├── docker-compose.yml           # Defines two services: pedro-bot and mongodb ├── index.js                     # Main entry point. Registers commands, listens for interactions └── package.json                 # Node.js dependencies
 
-.
-├── commands/
-│   ├── matchmaking/
-│   │   ├── helpers.js
-│   │   ├── lobbyManager.js
-│   │   └── lobbyData.json  (optional if still used, but replaced by Mongo)
-│   ├── levels/
-│   │   ├── level.js            // /level command
-│   │   ├── levelUtils.js       // XP formulas, threshold logic
-│   │   └── levelsManager.js    // Logic for awarding XP, leveling up, role assignment
-│   ├── matchmaking.js          // /matchmaking slash command
-│   └── (possibly other commands)
-├── models/
-│   ├── Lobby.js                // Mongoose model for matchmaking lobbies
-│   └── UserXP.js               // Mongoose model for user XP/levels
-├── utils/
-│   ├── database.js             // MongoDB connection setup
-│   ├── ButtonManager.js        // Reusable button logic
-│   └── (other generic utilities)
-├── index.js                    // Main entry point (loads commands, sets up events)
-├── Dockerfile                  // Used to build a container for the bot
-├── docker-compose.yml          // Defines services for the bot + Mongo
-├── .env                        // Holds environment variables
-└── README.md                   // This file
-
-Key Highlights
-
-1. index.js:
-
-Registers slash commands on startup (clears old commands, then registers new ones).
-
-Listens for interactionCreate events (slash commands, buttons, etc.).
-
-Listens for messageCreate events (awards XP for leveling).
-
-Sets up scheduling for matchmaking lobbies.
-
-
-
-2. commands/:
-
-Each slash command gets its own file (e.g., matchmaking.js, level.js).
-
-Subfolders like matchmaking/ and levels/ group code that’s specific to that feature.
-
-
-
-3. models/:
-
-Lobby.js: Mongoose schema for storing matchmaking lobby data (game code, times, participants, etc.).
-
-UserXP.js: Mongoose schema for storing each user’s XP, level, last message time, etc.
-
-
-
-4. utils/:
-
-database.js: Sets up the Mongoose connection (reads from MONGO_URI).
-
-ButtonManager.js: A small class that manages button creation across commands.
-
-You can add more truly “generic” utilities here.
-
-
-
-
+### Key Points
+- **`index.js`**: Sets up the Discord client, registers commands, and listens for both interactions (`interactionCreate`) and standard messages (`messageCreate`) for awarding XP.
+- **`utils/database.js`**: Loads environment variables for MongoDB, then runs `mongoose.connect(...)`. Exported once for the entire app.
+- **`models/*.js`**: Each file defines a Mongoose schema for storing data:
+  - `Lobby.js`: For matchmaking lobbies.
+  - `UserXP.js`: For leveling / XP.
+- **`commands/matchmaking/`**: Self-contained logic for the matchmaking system.
+- **`commands/levels/`**: Self-contained logic for leveling. Contains:
+  - `levelsManager.js`: Awarding XP and checking level-ups.
+  - `levelUtils.js`: XP/level threshold formulas.
+  - `level.js`: The `/level` slash command.
 
 ---
 
-Setup & Configuration
+## Matchmaking Feature
 
-1. Install Node.js (>= v16 recommended) and npm.
+1. **Slash Command**: `/matchmaking` (in `commands/matchmaking.js`):
+   - Prompts the user for time selection, game code, description, etc.
+   - Creates a new message in the `#matchmaking` channel with an embed and two buttons (JOIN, LEAVE).
+   - Creates a new thread under that message for discussion.
+   - Stores the lobby data in MongoDB (`Lobby` model).
+   - Schedules a start time (using `node-schedule` in `index.js`) to mark the lobby as “started” and update the embed.
+
+2. **Join/Leave Logic**:
+   - Inside `index.js` `interactionCreate` event, we handle `isButton()`.
+   - If the button ID is “join” or “leave,” it updates the corresponding lobby’s data (stored in Mongo), and edits the embed to reflect the updated users.
+
+3. **Embed Updates**:
+   - `helpers.js` within matchmaking builds or rebuilds the embed (`buildLobbyEmbed`), adding a small footer `(MATAC) The Mature Tactical Circkle`.
+   - `updateLobbyEmbed` re-edits the original message.
+
+By keeping all “matchmaking” references (like channel name `#matchmaking`) and game-lobby logic in `commands/matchmaking/`, we avoid scattering that code throughout the project.
+
+---
+
+## Leveling Feature
+
+1. **Mongo Model**: `UserXP.js` stores each user’s `_id` (Discord ID), their `xp` total, current `level`, etc.
+2. **XP Awarding**:  
+   - In `index.js`, we added a `messageCreate` event. Every new message from a user awards a small XP (e.g., 5).
+   - The logic of awarding XP is in `commands/levels/levelsManager.js` → `incrementXP()`.
+   - We store and fetch the user doc from Mongo, add XP, check if that user’s new total crosses the threshold for a new level, and if so, we assign a role and post a “level up” announcement in the channel.
+3. **Level/XP Formula**:  
+   - In `commands/levels/levelUtils.js`, we define functions like `xpRequiredForLevel(level)` and `calculateLevelFromXP(xp)`. This way, we can tweak the progression in a single place.
+4. **Role Assignment**:  
+   - We parse `LEVEL_ROLE_MAP` (an environment variable in JSON form) to avoid hardcoding role IDs.  
+   - If the user hits a new level that appears in the map, we assign that role.
+5. **`/level` Command** (optional, in `level.js`):  
+   - A user can check their current XP, level, and how much XP remains until the next level.
+
+This system is minimal, but it can be expanded easily with leaderboards, cooldowns, or advanced spam checks.
+
+---
+
+## Environment Variables
+
+| Variable          | Description                                                                   |
+|-------------------|-------------------------------------------------------------------------------|
+| `DISCORD_TOKEN`   | Discord bot token                                                              |
+| `CLIENT_ID`       | Your bot’s application client ID                                              |
+| `GUILD_ID`        | The server (guild) ID where you want to register commands                     |
+| `MONGO_URI`       | MongoDB connection string (e.g., `mongodb://mongodb:27017/pedro-bot`)         |
+| `MATCHMAKING_ROLE_ID` | (Optional) The role ID to mention in the matchmaking embed (if desired)   |
+| `LEVEL_ROLE_MAP`  | JSON mapping level -> role ID, e.g. `{"1":"ROLEID1","2":"ROLEID2","3":"..."} `|
+
+**Usage**:  
+- In Docker Compose, set these as environment variables under `pedro-bot`.  
+- See `docker-compose.yml` for an example.
+
+---
+
+## How to Run via Docker Compose
+
+1. **Clone** this repo or reference it in your Dockerfile build.  
+2. **Configure** your `.env` or environment variables (token, guild ID, Mongo URI, etc.).  
+3. **Ensure** your `docker-compose.yml` references:
+   ```yaml
+   services:
+     pedro-bot:
+       build: https://github.com/theepicsaxguy/Pedro-Bot.git#main
+       environment:
+         - DISCORD_TOKEN=...
+         - CLIENT_ID=...
+         - GUILD_ID=...
+         - MONGO_URI=mongodb://mongodb:27017/pedro-bot
+         - LEVEL_ROLE_MAP='{"1":"1234","2":"5678"}'
+       depends_on:
+         - mongodb
+     mongodb:
+       image: mongo:4.4
+       volumes:
+         - mongo_data:/data/db
+   volumes:
+     mongo_data:
+
+4. Run docker compose build && docker compose up -d (or docker compose up --build -d).
 
 
-2. Clone this repository:
-
-git clone https://github.com/theepicsaxguy/Pedro-Bot.git
-cd Pedro-Bot
-
-
-3. Install dependencies:
-
-npm install
-
-
-4. Create a .env file in the root directory (or set environment variables via Docker Compose). At minimum, you need:
-
-DISCORD_TOKEN="your_discord_bot_token"
-CLIENT_ID="your_discord_application_client_id"
-GUILD_ID="the_discord_server_id_for_commands"
-MONGO_URI="mongodb://localhost:27017/pedro-bot"
-
-Optional for leveling:
-
-LEVEL_ROLE_MAP='{"1":"ROLE_ID_FOR_LEVEL1","2":"ROLE_ID_FOR_LEVEL2"}'
+5. Your bot will connect to Discord, connect to Mongo, register slash commands, and start listening for messages.
 
 
 
 
 ---
 
-Running Locally
+Adding New Features
 
-1. Make sure you have a MongoDB instance running locally, or you’ve pointed MONGO_URI to a remote/hosted database.
+Create a new folder/file under commands/<featureName>/<featureManager>.js for your logic.
 
+Define Mongoose models in models/<ModelName>.js if you need database storage.
 
-2. Run:
+Register a slash command by creating a file under commands/<commandName>.js that exports a SlashCommandBuilder.
 
-npm start
+The index.js automatically picks up .js files in /commands, registering them with Discord.
 
-
-3. The bot will log “Bot is started and ready!” once connected.
-
-
-4. You should see slash commands created on the specified GUILD (server) within a few seconds/minutes.
-
-
-
-> Note: By default, the code clears old global/guild commands, then registers only these GUILD commands. If you want global commands, you can tweak the index.js logic (but they can take up to 1 hour to show up).
-
+If your feature requires listening to raw events (like messageCreate), add it in index.js or a dedicated event file, just be mindful of the single “bot instance” approach to avoid collisions.
 
 
 
 ---
 
-Docker & Docker Compose
+Reusing Functions and Avoiding Duplicates
 
-The repository also includes a docker-compose.yml so you can run both the bot and a MongoDB service easily:
+This codebase follows a few guidelines to keep things clean:
 
-version: '3.9'
+1. No Hardcoding: References to specific channels (like #matchmaking) and roles are done in the command or environment variables, not scattered across utility files.
 
-services:
-  pedro-bot:
-    container_name: pedro-bot
-    build: https://github.com/theepicsaxguy/Pedro-Bot.git#main
-    volumes:
-      - type: bind
-        source: /var/log/pedro-bot
-        target: /app/logs
-      - type: bind
-        source: /etc/pedro-bot
-        target: /app/data
-    restart: always
-    pull_policy: build
-    environment:
-      - DISCORD_TOKEN=${DISCORD_TOKEN}
-      - CLIENT_ID=${CLIENT_ID}
-      - GUILD_ID=${GUILD_ID}
-      - MONGO_URI=mongodb://mongodb:27017/pedro-bot
-    depends_on:
-      - mongodb
 
-  mongodb:
-    container_name: pedro-bot-mongo
-    image: mongo:4.4
-    restart: always
-    volumes:
-      - mongo_data:/data/db
+2. Helpers for Generic Logic:
 
-volumes:
-  mongo_data:
+ButtonManager.js provides a generic way to create buttons (no mention of matchmaking or level).
 
-Usage
+database.js is a single point for connecting to Mongo.
 
-docker compose up --build -d will build the bot image and spin up containers in the background.
 
-The mongo_data volume ensures your MongoDB data persists across restarts.
 
+3. Command-Specific Folders:
+
+commands/matchmaking/ has all the matchmaking logic in one place.
+
+commands/levels/ has the leveling logic in one place.
+
+This helps reduce duplication of logic across multiple commands.
+
+
+
+4. Models:
+
+Each domain (lobbies, user XP) has its own model file in models/.
+
+All of them share the same mongoose instance from utils/database.js.
+
+
+
+
+These practices ensure that if you rename or remove a channel, or if you want to update an XP formula, you only do it in one place.
 
 
 ---
 
-Environment Variables
+Questions or Feedback?
 
-Here are the main environment variables:
+If you run into issues or want to propose enhancements (like a spam filter for XP, or more advanced matchmaking scheduling), feel free to open a pull request or file an issue on the repository!
 
-DISCORD_TOKEN: Your bot’s secret token, from the Discord developer portal.
+Enjoy using Pedro-Bot, and happy gaming!
 
-CLIENT_ID: The application ID of your Discord app.
 
-GUILD_ID: The server ID where you want slash commands registered.
-
-MONGO_URI: The connection string for MongoDB (e.g., mongodb://mongodb:27017/pedro-bot).
-
-LEVEL_ROLE_MAP (optional for leveling): A JSON object mapping levels to Discord role IDs (e.g., {"1":"SOME_ROLE_ID","2":"ANOTHER_ROLE_ID"}).
-
-
-
----
-
-Commands Overview
-
-/matchmaking
-
-Creates a new lobby post in the #matchmaking channel.
-
-Provides join/leave buttons, starts a thread, schedules a start time, and tags a role if configured.
-
-
-/level
-
-Shows your current level and XP, plus how much XP needed for the next level.
-
-
-> You can add more commands the same way (SlashCommandBuilder, etc.).
-
-
-
-
----
-
-Matchmaking Features
-
-1. Lobby Creation (/matchmaking):
-
-Requires user inputs: time choice, tags, game code, description.
-
-Schedules a “start” edit to the lobby embed.
-
-
-
-2. Lobby Embed:
-
-Lists joined users, total slots, time, etc.
-
-Has a small footer (MATAC) The Mature Tactical Circkle.
-
-
-
-3. Join/Leave Buttons:
-
-/join adds you to the lobby, optionally adds you to the thread.
-
-/leave removes you from it.
-
-
-
-4. Data Stored in Mongo using the Lobby model.
-
-
-
-
----
-
-Leveling Features
-
-1. XP on Message:
-
-Each user gets a fixed XP amount for each message (5 by default).
-
-This is handled in index.js → messageCreate event, which calls incrementXP(...).
-
-
-
-2. Level Formula:
-
-In levelUtils.js, we have a function calculateLevelFromXP(xp) that decides what level your XP corresponds to.
-
-Another function xpRequiredForLevel(level) so you can tweak or scale it.
-
-
-
-3. Role Assignment:
-
-If a user’s new level is found in LEVEL_ROLE_MAP, that role is assigned automatically, and a message is posted to the same channel.
-
-
-
-4. /level Command:
-
-Allows a user to see their current XP, level, and how much XP until the next level.
-
-
-
-
-
----
-
-Adding New Commands
-
-1. Create a new file in commands/. For example: commands/coolfeature.js.
-
-
-2. Export an object with .data (a SlashCommandBuilder) and .execute(interaction).
-
-
-3. The index.js file automatically loads any .js command in the commands/ folder on startup.
-
-
-4. If you need persistent data, create a new Mongoose model in models/ and a manager file in your commands/ subfolder.
-
-
-
-
----
-
-Contributing
-
-Branches: Use feature branches for your new functionalities.
-
-Pull Requests: Open a PR against the main branch so others can review.
-
-Lint & Style: Follow the existing code style.
-
-Tests: If you add complex logic, consider basic tests (e.g., using Jest) to ensure it works as expected.
-
-
-Feel free to reach out or open issues if you have any questions, suggestions, or run into bugs. Thanks for helping improve Pedro-Bot!
 
