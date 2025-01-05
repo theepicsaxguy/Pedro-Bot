@@ -80,27 +80,27 @@ client.on('interactionCreate', async interaction => {
 
         switch (interaction.customId) {
             case 'join':
-                // === ADD USER TO THE THREAD IF IT EXISTS ===
                 if (lobbyData.threadId) {
-                        const thread = interaction.channel.threads.cache.get(lobbyData.threadId);
-                        if (thread) {
-                            await thread.members.add(userId);
-                            await thread.send(`Welcome <@${userId}>! All match communication will happen here.`);
-                        }
+                    const thread = interaction.channel.threads.cache.get(lobbyData.threadId);
+                    if (thread) {
+                        await thread.members.add(userId);
+                        await thread.send(`Welcome <@${userId}>! All match communication will happen here.`);
                     }
+                }
+
                 if (!lobbyData.joinedUsers.includes(username)) {
                     lobbyData.joinedUsers.push(username);
                     lobbyData.joinedUserIds.push(userId);
                     lobbyData.currentSlots += 1;
                     await updateLobbyEmbed(interaction, lobbyData);
-                    await interaction.deferUpdate();
+                    await interaction.deferUpdate(); // Use deferUpdate() and do not follow it with reply()
                 } else {
                     await interaction.reply({ content: 'You are already in the match!', flags: MessageFlags.Ephemeral });
                 }
                 break;
 
+
             case 'leave':
-                // Remove user from the thread & announce departure (without tagging)
                 if (lobbyData.threadId) {
                     const thread = interaction.channel.threads.cache.get(lobbyData.threadId);
                     if (thread) {
@@ -114,11 +114,12 @@ client.on('interactionCreate', async interaction => {
                     lobbyData.joinedUserIds = lobbyData.joinedUserIds.filter(id => id !== userId);
                     lobbyData.currentSlots -= 1;
                     await updateLobbyEmbed(interaction, lobbyData);
-                    await interaction.deferUpdate();
+                    await interaction.deferUpdate(); // Use deferUpdate() once
                 } else {
                     await interaction.reply({ content: 'You are not in the match!', flags: MessageFlags.Ephemeral });
                 }
                 break;
+
 
             default:
                 await interaction.reply({ content: 'Unknown interaction.', flags: MessageFlags.Ephemeral });
