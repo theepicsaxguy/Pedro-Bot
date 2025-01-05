@@ -57,7 +57,7 @@ const rest = new REST({ version: '10' }).setToken(TOKEN);
 })();
 
 client.once('ready', () => {
-    console.log('Bot is started and ready!');
+    console.log('Bot is started and ready! v1.0');
 });
 
 client.on('interactionCreate', async interaction => {
