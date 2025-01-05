@@ -49,7 +49,8 @@ module.exports = {
         ),
 
     async execute(interaction) {
-        await interaction.deferReply({ ephemeral: true });
+        await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+
 
         // Extract user input
         const timeInput = interaction.options.getString('time');

@@ -44,6 +44,7 @@ const rest = new REST({ version: '10' }).setToken(TOKEN);
 (async () => {
     try {
         // Clear existing guild commands
+        await rest.put(Routes.applicationCommands(CLIENT_ID), { body: [] });
         await rest.put(Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID), { body: [] });
         // Register fresh set
         await rest.put(
