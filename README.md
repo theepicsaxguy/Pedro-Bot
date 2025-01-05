@@ -1,8 +1,3 @@
-Below is a detailed README.md for your repository. It explains the overall project structure, how to configure and run the bot, and what each folder or file does. It’s designed for developers who may want to maintain or extend this codebase.
-
-
----
-
 Pedro-Bot
 
 Pedro-Bot is a Discord bot focused on two core features:
