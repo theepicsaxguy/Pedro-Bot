@@ -7,9 +7,15 @@ const {
     TextInputBuilder,
     TextInputStyle
 } = require('discord.js');
+
+// Generic ButtonManager import is fine to remain in utils
 const ButtonManager = require('../utils/ButtonManager');
-const lobbyManager = require('../utils/lobbyManager');
-const { buildLobbyEmbed } = require('../utils/helpers');
+
+// Moved from utils/lobbyManager to a subfolder (shown below)
+const lobbyManager = require('./matchmaking/lobbyManager');
+
+// Moved embed helpers here (or to a small helper in ./matchmaking/helpers.js)
+const { buildLobbyEmbed, updateLobbyEmbed } = require('./matchmaking/helpers');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -49,7 +55,7 @@ module.exports = {
         ),
 
     async execute(interaction) {
-        // CHANGE: We create the lobby in #matchmaking specifically
+        // Defer once, ephemeral
         await interaction.deferReply({ ephemeral: true });
 
         // Extract input
@@ -69,7 +75,6 @@ module.exports = {
             });
             return;
         }
-
         if (description.length > 200) {
             await interaction.editReply({
                 content: 'Description is too long. Please limit to 200 characters.',
@@ -78,7 +83,7 @@ module.exports = {
             return;
         }
 
-        // Determine the match time
+        // Determine match time
         const now = new Date();
         let matchTime;
         if (timeInput === 'now') {
@@ -89,7 +94,7 @@ module.exports = {
             matchTime = new Date(now);
             matchTime.setDate(matchTime.getDate() + 1);
         } else if (timeInput === 'custom') {
-            // Present a modal for custom date/time
+            // Show a modal for custom date/time
             const modal = new ModalBuilder()
                 .setCustomId('customTimeModal')
                 .setTitle('Set Custom Time');
@@ -107,27 +112,32 @@ module.exports = {
             await interaction.showModal(modal);
             return;
         }
-
         const unixTime = Math.floor(matchTime.getTime() / 1000);
 
-        // Build the initial embed
+        // Prepare initial lobby data
         const lobbyData = {
             gameCode,
             creator,
             unixTime,
             tags,
             joinedUsers: [username],
+            joinedUserIds: [creator],
             totalSlots: 6,
-            description
+            description,
+            started: false,
+            matchTime,
         };
+
+        // Build the embed
         const embed = buildLobbyEmbed(lobbyData);
+        lobbyData.embed = embed;
 
         // Provide join/leave buttons
         const publicComponents = [
             ButtonManager.createButtonRow(['join', 'leave'])
         ];
 
-        // CHANGE: Instead of editReply, send to #matchmaking
+        // Send to #matchmaking
         const matchmakingChannel = interaction.guild.channels.cache.find(
             (ch) => ch.name === 'matchmaking'
         );
@@ -141,10 +151,11 @@ module.exports = {
 
         const message = await matchmakingChannel.send({
             embeds: [embed],
-            components: publicComponents
+            components: publicComponents,
+            allowedMentions: { parse: ['roles'] },
         });
 
-        // Create a thread in that channel
+        // Create a thread
         const thread = await message.startThread({
             name: gameCode,
             autoArchiveDuration: 60,
@@ -153,20 +164,14 @@ module.exports = {
         await thread.members.add(creator);
         await thread.send(`<@${creator}> This thread is for match communication.`);
 
-        // Finalize lobby data
-        lobbyData.started = false;
-        lobbyData.matchTime = matchTime;
-        lobbyData.joinedUserIds = [creator];
-        lobbyData.embed = embed;
+        // Associate thread ID and store
         lobbyData.threadId = thread.id;
-
-        // Store in manager
         lobbyManager.setLobby(message.id, lobbyData);
 
-        // Schedule the lobby
+        // Schedule the lobby start
         interaction.client.scheduleLobbyStart(message.id, matchTime, message);
 
-        // CHANGE: Inform the user (ephemeral) that the lobby was created
+        // Inform user ephemerally
         await interaction.editReply({
             content: 'Your matchmaking lobby has been created in #matchmaking!',
             flags: MessageFlags.Ephemeral
