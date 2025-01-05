@@ -6,13 +6,13 @@ services:
   discord-bot:
     image: node:20
     container_name: discord-bot
-    working_dir: /app
+    working_dir: /
     environment:
       - DISCORD_TOKEN=${DISCORD_TOKEN}
       - CLIENT_ID=${CLIENT_ID}
       - GUILD_ID=${GUILD_ID}
     volumes:
-      - .:/app
+      - .:/
     ports:
       - '3000:3000'
     command: npm start
