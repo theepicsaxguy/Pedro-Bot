@@ -4,10 +4,11 @@ const ButtonManager = require('../../utils/ButtonManager');
 
 const MATCHMAKING_ROLE_ID = process.env.MATCHMAKING_ROLE_ID || null;
 
+
 function buildLobbyEmbed(lobbyData) {
-    const roleMention = MATCHMAKING_ROLE_ID ? `<@&${MATCHMAKING_ROLE_ID}>` : '@Matchmaking';
     return new EmbedBuilder()
-        .setTitle(lobbyData.gameCode)
+        // CHANGE: new embed title = "Lobby created 123"
+        .setTitle(`Lobby created ${lobbyData.gameCode}`)
         .setDescription(`
 **Host:** <@${lobbyData.creator}>
 **Time:** <t:${lobbyData.unixTime}:t>
@@ -16,12 +17,9 @@ function buildLobbyEmbed(lobbyData) {
 **Joined:** ${lobbyData.joinedUsers.join(', ')}
 **Description:** ${lobbyData.description}
 
-Notes: Running missions in a lobby, will start at designated time (auto-converts to your time)
-Info and questions in thread.
+Notes: Missions start at designated time (auto-converts to your time).
+All discussion is in the thread. Please click Join/Leave as needed.
 
-Please put the corresponding tick for attendance;
-
-Cc: ${roleMention}
 `)
         .setColor(0x00AE86);
 }

@@ -21,8 +21,9 @@ module.exports = {
                 .setRequired(true)
                 .addChoices(
                     { name: 'Now', value: 'now' },
+                    { name: 'In 30 Minutes', value: '30_min' },
                     { name: 'In 1 Hour', value: '1_hour' },
-                    { name: 'Tomorrow', value: 'tomorrow' },
+                    { name: 'In 2 Hours', value: '2_hours' },
                     { name: 'Custom Time', value: 'custom' }
                 )
         )
@@ -82,11 +83,12 @@ module.exports = {
         let matchTime;
         if (timeInput === 'now') {
             matchTime = now;
+        } else if (timeInput === '30_min') {
+            matchTime = new Date(now.getTime() + 30 * 60 * 1000);
         } else if (timeInput === '1_hour') {
             matchTime = new Date(now.getTime() + 60 * 60 * 1000);
-        } else if (timeInput === 'tomorrow') {
-            matchTime = new Date(now);
-            matchTime.setDate(matchTime.getDate() + 1);
+        } else if (timeInput === '2_hours') {
+            matchTime = new Date(now.getTime() + 2 * 60 * 60 * 1000)
         } else if (timeInput === 'custom') {
             const modal = new ModalBuilder()
                 .setCustomId('customTimeModal')
@@ -141,8 +143,14 @@ module.exports = {
             return;
         }
 
+        // === NEW: We'll mention the role outside the embed ===
+        const MATCHMAKING_ROLE_ID = process.env.MATCHMAKING_ROLE_ID || null;
+        const roleMention = MATCHMAKING_ROLE_ID ? `<@&${MATCHMAKING_ROLE_ID}>` : '@Matchmaking';
+
         const message = await matchmakingChannel.send({
+            // role mention in plain text outside the embed
             embeds: [embed],
+            content: `Cc: ${roleMention}`,
             components: publicComponents,
             allowedMentions: { parse: ['roles'] },
         });
