@@ -4,7 +4,7 @@ const schedule = require('node-schedule');
 const { Client, GatewayIntentBits, Collection, InteractionType, MessageFlags } = require('discord.js');
 const { REST, Routes } = require('discord.js');
 
-// === Load the MongoDB connection from utils/database.js ===
+// Load Mongo connection
 require('./utils/database');
 
 const ButtonManager = require('./utils/ButtonManager');
@@ -21,11 +21,11 @@ const GUILD_ID = process.env.GUILD_ID;
 // === SCHEDULING FUNCTION ===
 client.scheduleLobbyStart = function (lobbyId, matchTime, message) {
   schedule.scheduleJob(matchTime, async () => {
-    const lobbyData = await lobbyManager.getLobby(lobbyId); // Must await now that it's Mongo-based
+    const lobbyData = await lobbyManager.getLobby(lobbyId);
     if (lobbyData && !lobbyData.started) {
       lobbyData.started = true;
-      lobbyData.embed.title = `Matchmaking Lobby (Started)`; // or .setTitle if you rebuild embed
-      // upsert changes
+      // Update embed title or any field you want
+      lobbyData.embed.title = 'Matchmaking Lobby (Started)';
       await lobbyManager.setLobby(lobbyId, lobbyData);
 
       await message.edit({
@@ -48,19 +48,17 @@ for (const file of commandFiles) {
 const rest = new REST({ version: '10' }).setToken(TOKEN);
 (async () => {
   try {
-    // Remove existing global commands
+    // Clear global commands
     await rest.put(Routes.applicationCommands(CLIENT_ID), { body: [] });
-
-    // Remove existing guild commands
+    // Clear guild commands
     await rest.put(Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID), { body: [] });
-
-    // Register fresh set of guild commands
+    // Register fresh set
     await rest.put(
       Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID),
       { body: client.commands.map(cmd => cmd.data.toJSON()) }
     );
   } catch (error) {
-    // no console logging
+    // No console logging
   }
 })();
 
@@ -76,7 +74,6 @@ client.on('interactionCreate', async interaction => {
     try {
       await command.execute(interaction);
     } catch (err) {
-      // If we already replied or deferred:
       if (interaction.replied || interaction.deferred) {
         await interaction.followUp({
           content: 'There was an error executing that command.',
@@ -118,8 +115,7 @@ client.on('interactionCreate', async interaction => {
         }
         lobbyData.joinedUsers.push(username);
         lobbyData.joinedUserIds.push(userId);
-        lobbyData.currentSlots = (lobbyData.currentSlots || 1) + 1; 
-        // Or handle if undefined, etc.
+        lobbyData.currentSlots = (lobbyData.currentSlots || 1) + 1;
 
         if (lobbyData.threadId) {
           const thread = interaction.channel.threads.cache.get(lobbyData.threadId);
@@ -129,9 +125,8 @@ client.on('interactionCreate', async interaction => {
           }
         }
 
-        // Update DB
+        // Persist to DB
         await lobbyManager.setLobby(messageId, lobbyData);
-        // Update embed
         await updateLobbyEmbed(interaction, lobbyData);
         await interaction.deferUpdate();
         break;
@@ -145,7 +140,6 @@ client.on('interactionCreate', async interaction => {
           });
           return;
         }
-
         lobbyData.joinedUsers = lobbyData.joinedUsers.filter(user => user !== username);
         lobbyData.joinedUserIds = lobbyData.joinedUserIds.filter(id => id !== userId);
         lobbyData.currentSlots = (lobbyData.currentSlots || 1) - 1;
@@ -158,9 +152,7 @@ client.on('interactionCreate', async interaction => {
           }
         }
 
-        // Update DB
         await lobbyManager.setLobby(messageId, lobbyData);
-        // Update embed
         await updateLobbyEmbed(interaction, lobbyData);
         await interaction.deferUpdate();
         break;
@@ -173,49 +165,10 @@ client.on('interactionCreate', async interaction => {
         });
     }
 
-  } else if (interaction.type === InteractionType.ModalSubmit) {
-    if (interaction.customId === 'customTimeModal') {
-      // Single-field approach B
-      const customTimeInput = interaction.fields.getTextInputValue('customTime');
+  } 
+  // REMOVE the entire custom time modal code:
+  // We no longer handle "customTimeModal" or any "ModalSubmit" for it
 
-      const messageId = interaction.message.id;
-      const lobbyData = await lobbyManager.getLobby(messageId);
-
-      if (!lobbyData) {
-        await interaction.reply({
-          content: 'Lobby data not found.',
-          flags: MessageFlags.Ephemeral,
-          allowedMentions: { parse: ['roles'] },
-        });
-        return;
-      }
-
-      const parsedDate = new Date(customTimeInput);
-      if (isNaN(parsedDate)) {
-        await interaction.reply({
-          content: 'Invalid format. Please use YYYY-MM-DD HH:MM (e.g., 2025-01-04 15:30).',
-          flags: MessageFlags.Ephemeral,
-          allowedMentions: { parse: ['roles'] },
-        });
-        return;
-      }
-
-      // Update data
-      lobbyData.matchTime = parsedDate;
-      lobbyData.unixTime = Math.floor(parsedDate.getTime() / 1000);
-
-      await lobbyManager.setLobby(messageId, lobbyData);
-      await updateLobbyEmbed(interaction, lobbyData);
-
-      client.scheduleLobbyStart(messageId, parsedDate, interaction.message);
-
-      await interaction.reply({
-        content: 'Custom time set successfully!',
-        flags: MessageFlags.Ephemeral,
-        allowedMentions: { parse: ['roles'] },
-      });
-    }
-  }
 });
 
 client.login(TOKEN);

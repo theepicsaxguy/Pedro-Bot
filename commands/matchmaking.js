@@ -2,10 +2,7 @@
 const {
     SlashCommandBuilder,
     ActionRowBuilder,
-    MessageFlags,
-    ModalBuilder,
-    TextInputBuilder,
-    TextInputStyle
+    MessageFlags
   } = require('discord.js');
   
   const ButtonManager = require('../utils/ButtonManager');
@@ -21,11 +18,11 @@ const {
           .setDescription('Select match time')
           .setRequired(true)
           .addChoices(
-            { name: 'Now',         value: 'now'      },
-            { name: 'In 30 Minutes', value: '30_min' },
-            { name: 'In 1 Hour',   value: '1_hour'   },
-            { name: 'In 2 Hours',  value: '2_hours'  },
-            { name: 'Custom Time', value: 'custom'   }
+            { name: 'Now',           value: 'now'     },
+            { name: 'In 30 Minutes', value: '30_min'  },
+            { name: 'In 1 Hour',     value: '1_hour'  },
+            { name: 'In 2 Hours',    value: '2_hours' }
+            // REMOVED: { name: 'Custom Time', value: 'custom' }
           )
       )
       .addStringOption(option =>
@@ -54,6 +51,7 @@ const {
       // Defer ephemeral
       await interaction.deferReply({ flags: MessageFlags.Ephemeral });
   
+      // Collect user input
       const timeInput = interaction.options.getString('time');
       const tagsInput = interaction.options.getString('tags');
       const tags = tagsInput.split(',').map(tag => tag.trim()).join(', ');
@@ -90,31 +88,13 @@ const {
         matchTime = new Date(now.getTime() + 60 * 60 * 1000);
       } else if (timeInput === '2_hours') {
         matchTime = new Date(now.getTime() + 2 * 60 * 60 * 1000);
-      } else if (timeInput === 'custom') {
-        // Single field approach
-        const modal = new ModalBuilder()
-          .setCustomId('customTimeModal')
-          .setTitle('Set Custom Date & Time');
-  
-        const timeInputField = new TextInputBuilder()
-          .setCustomId('customTime')
-          .setLabel('Enter date & time (YYYY-MM-DD HH:MM, 24-hour)')
-          .setStyle(TextInputStyle.Short)
-          .setPlaceholder('2025-01-04 15:30')
-          .setRequired(true);
-  
-        const firstActionRow = new ActionRowBuilder().addComponents(timeInputField);
-        modal.addComponents(firstActionRow);
-  
-        await interaction.showModal(modal);
-        return;
       }
   
       const unixTime = Math.floor(matchTime.getTime() / 1000);
   
       // Build initial data
       const lobbyData = {
-        _id: '', // We'll fill it with message ID once we have it
+        _id: '', // We'll fill with message ID
         gameCode,
         creator,
         unixTime,
@@ -144,12 +124,13 @@ const {
         return;
       }
   
+      // Fix the role mention (no "Cc:"), just the role itself
       const MATCHMAKING_ROLE_ID = process.env.MATCHMAKING_ROLE_ID || null;
       const roleMention = MATCHMAKING_ROLE_ID ? `<@&${MATCHMAKING_ROLE_ID}>` : '@Matchmaking';
   
-      // Mention the role outside the embed to actually ping
+      // Actually ping the role with no prefix
       const message = await matchmakingChannel.send({
-        content: `Cc: ${roleMention}`,
+        content: roleMention,
         embeds: [embed],
         components: publicComponents,
         allowedMentions: { parse: ['roles'] },
@@ -164,7 +145,7 @@ const {
       await thread.members.add(creator);
       await thread.send(`<@${creator}> This thread is for match communication.`);
   
-      // Update the ID field and store in DB
+      // Store final data (Mongo)
       lobbyData._id = message.id;
       lobbyData.threadId = thread.id;
       await lobbyManager.setLobby(message.id, lobbyData);
