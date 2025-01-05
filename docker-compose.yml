@@ -15,3 +15,15 @@ services:
       - DISCORD_TOKEN=${DISCORD_TOKEN}
       - CLIENT_ID=${CLIENT_ID}
       - GUILD_ID=${GUILD_ID}
+      - MONGO_URI=mongodb://mongodb:27017/pedro-bot
+    depends_on:
+      - mongodb
+
+  mongodb:
+    container_name: pedro-bot-mongo
+    image: mongo:4.4
+    restart: always
+    volumes:
+      - type: bind
+        source: ./mongo_data
+        target: /data/db
