@@ -129,3 +129,4 @@ dist
 .yarn/install-state.gz
 .pnp.*
 app/utils/lobbyData.json
+gpt.txt
