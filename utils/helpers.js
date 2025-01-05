@@ -1,16 +1,16 @@
 // utils/helpers.js
-
 const { EmbedBuilder } = require('discord.js');
 const ButtonManager = require('./ButtonManager');
 
+// NEW: If you prefer to mention the role by ID, set it here
+const MATCHMAKING_ROLE_ID = process.env.MATCHMAKING_ROLE_ID || null;
+
 /**
  * Build or rebuild a lobby embed in one place.
- * We read all the fields from the provided lobbyData
- * to maintain a single source of truth for embed structure.
  */
 function buildLobbyEmbed(lobbyData) {
   // Title = Game code
-  // Using the field data from lobbyData to ensure consistency
+  const roleMention = MATCHMAKING_ROLE_ID ? `<@&${MATCHMAKING_ROLE_ID}>` : '@Matchmaking';
   return new EmbedBuilder()
     .setTitle(lobbyData.gameCode)
     .setDescription(`
@@ -26,35 +26,29 @@ Info and questions in thread.
 
 Please put the corresponding tick for attendance;
 
-Cc: @Matchmaking
+Cc: ${roleMention}
 `)
     .setColor(0x00AE86);
 }
 
 /**
  * Update an existing lobby message with new embed data.
- * We rebuild the embed from the latest lobbyData, then edit the message.
  */
 async function updateLobbyEmbed(interaction, lobbyData, components = []) {
-  // Rebuild the embed via our single helper
   const embed = buildLobbyEmbed(lobbyData);
   lobbyData.embed = embed;
 
-  // Reuse existing buttons if none are provided
   const finalComponents = components.length > 0 ? components : interaction.message.components;
-
   if (interaction.message) {
     await interaction.message.edit({ embeds: [embed], components: finalComponents });
   }
 }
 
 /**
- * Optional: If you still need a function specifically to update the title,
- * you can do it here, but typically buildLobbyEmbed() is enough.
+ * Optional function for updating the lobby status, but typically buildLobbyEmbed is enough.
  */
 async function updateLobbyStatus(interaction, lobbyData, title) {
-  // You could do something with the title, or just rely on buildLobbyEmbed again.
-  lobbyData.gameCode = title; // for example, if we want to rename the "gameCode" to the new title
+  lobbyData.gameCode = title;
   const embed = buildLobbyEmbed(lobbyData);
   lobbyData.embed = embed;
 

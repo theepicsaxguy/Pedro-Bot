@@ -1,11 +1,12 @@
-const { Client, GatewayIntentBits, Collection, InteractionType, MessageFlags, EmbedBuilder } = require('discord.js');
+// index.js
+const { Client, GatewayIntentBits, Collection, InteractionType, MessageFlags } = require('discord.js');
 const { REST, Routes } = require('discord.js');
 const ButtonManager = require('./utils/ButtonManager');
-const lobbyManager = require('./utils/lobbyManager'); // Newly added lobbyManager
-const { updateLobbyEmbed } = require('./utils/helpers'); // Helper functions
+const lobbyManager = require('./utils/lobbyManager');
+const { updateLobbyEmbed } = require('./utils/helpers');
 require('dotenv').config();
 const fs = require('fs');
-const schedule = require('node-schedule'); // For scheduling
+const schedule = require('node-schedule');
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 const TOKEN = process.env.DISCORD_TOKEN;
@@ -42,8 +43,16 @@ const rest = new REST({ version: '10' }).setToken(TOKEN);
 // Registering commands
 (async () => {
     try {
-        const commands = client.commands.map(command => command.data.toJSON());
-        await rest.put(Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID), { body: commands });
+        // CHANGE: We add a small check to avoid duplicate registration
+        const existingCommands = await rest.get(Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID));
+        const commandNames = existingCommands.map(cmd => cmd.name);
+
+        const newCommands = client.commands.map(command => command.data.toJSON());
+        // If not registered yet, register them
+        if (!commandNames.includes('matchmaking')) {
+            await rest.put(Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID), { body: newCommands });
+        }
+        // Else, skip re-registering to avoid duplicates
     } catch (error) {
         // No console logging
     }
@@ -61,9 +70,15 @@ client.on('interactionCreate', async interaction => {
             await command.execute(interaction);
         } catch (error) {
             if (interaction.replied || interaction.deferred) {
-                await interaction.followUp({ content: 'There was an error executing that command.', flags: MessageFlags.Ephemeral });
+                await interaction.followUp({
+                    content: 'There was an error executing that command.',
+                    flags: MessageFlags.Ephemeral
+                });
             } else {
-                await interaction.reply({ content: 'There was an error executing that command.', flags: MessageFlags.Ephemeral });
+                await interaction.reply({
+                    content: 'There was an error executing that command.',
+                    flags: MessageFlags.Ephemeral
+                });
             }
         }
     } else if (interaction.isButton()) {
@@ -80,6 +95,18 @@ client.on('interactionCreate', async interaction => {
 
         switch (interaction.customId) {
             case 'join':
+                // CHANGE: Check first
+                if (lobbyData.joinedUsers.includes(username)) {
+                    await interaction.reply({ content: 'You are already in the match!', flags: MessageFlags.Ephemeral });
+                    return;
+                }
+
+                // Add user to array
+                lobbyData.joinedUsers.push(username);
+                lobbyData.joinedUserIds.push(userId);
+                lobbyData.currentSlots += 1;
+
+                // Then add to thread if it exists
                 if (lobbyData.threadId) {
                     const thread = interaction.channel.threads.cache.get(lobbyData.threadId);
                     if (thread) {
@@ -88,19 +115,24 @@ client.on('interactionCreate', async interaction => {
                     }
                 }
 
-                if (!lobbyData.joinedUsers.includes(username)) {
-                    lobbyData.joinedUsers.push(username);
-                    lobbyData.joinedUserIds.push(userId);
-                    lobbyData.currentSlots += 1;
-                    await updateLobbyEmbed(interaction, lobbyData);
-                    await interaction.deferUpdate(); // Use deferUpdate() and do not follow it with reply()
-                } else {
-                    await interaction.reply({ content: 'You are already in the match!', flags: MessageFlags.Ephemeral });
-                }
+                // Update embed
+                await updateLobbyEmbed(interaction, lobbyData);
+                await interaction.deferUpdate();
                 break;
 
-
             case 'leave':
+                // CHANGE: Reverse the check order
+                if (!lobbyData.joinedUsers.includes(username)) {
+                    await interaction.reply({ content: 'You are not in the match!', flags: MessageFlags.Ephemeral });
+                    return;
+                }
+
+                // Remove user from data
+                lobbyData.joinedUsers = lobbyData.joinedUsers.filter(user => user !== username);
+                lobbyData.joinedUserIds = lobbyData.joinedUserIds.filter(id => id !== userId);
+                lobbyData.currentSlots -= 1;
+
+                // Remove from thread if it exists
                 if (lobbyData.threadId) {
                     const thread = interaction.channel.threads.cache.get(lobbyData.threadId);
                     if (thread) {
@@ -109,17 +141,10 @@ client.on('interactionCreate', async interaction => {
                     }
                 }
 
-                if (lobbyData.joinedUsers.includes(username)) {
-                    lobbyData.joinedUsers = lobbyData.joinedUsers.filter(user => user !== username);
-                    lobbyData.joinedUserIds = lobbyData.joinedUserIds.filter(id => id !== userId);
-                    lobbyData.currentSlots -= 1;
-                    await updateLobbyEmbed(interaction, lobbyData);
-                    await interaction.deferUpdate(); // Use deferUpdate() once
-                } else {
-                    await interaction.reply({ content: 'You are not in the match!', flags: MessageFlags.Ephemeral });
-                }
+                // Update embed
+                await updateLobbyEmbed(interaction, lobbyData);
+                await interaction.deferUpdate();
                 break;
-
 
             default:
                 await interaction.reply({ content: 'Unknown interaction.', flags: MessageFlags.Ephemeral });

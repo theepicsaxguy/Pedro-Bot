@@ -1,5 +1,4 @@
 // commands/matchmaking.js
-
 const {
     SlashCommandBuilder,
     ActionRowBuilder,
@@ -10,7 +9,7 @@ const {
 } = require('discord.js');
 const ButtonManager = require('../utils/ButtonManager');
 const lobbyManager = require('../utils/lobbyManager');
-const { buildLobbyEmbed } = require('../utils/helpers'); // Import the single embed builder
+const { buildLobbyEmbed } = require('../utils/helpers');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -50,7 +49,8 @@ module.exports = {
         ),
 
     async execute(interaction) {
-        await interaction.deferReply();
+        // CHANGE: We create the lobby in #matchmaking specifically
+        await interaction.deferReply({ ephemeral: true });
 
         // Extract input
         const timeInput = interaction.options.getString('time');
@@ -110,7 +110,7 @@ module.exports = {
 
         const unixTime = Math.floor(matchTime.getTime() / 1000);
 
-        // Build the initial embed via our unified helper
+        // Build the initial embed
         const lobbyData = {
             gameCode,
             creator,
@@ -118,7 +118,7 @@ module.exports = {
             tags,
             joinedUsers: [username],
             totalSlots: 6,
-            description,
+            description
         };
         const embed = buildLobbyEmbed(lobbyData);
 
@@ -127,13 +127,24 @@ module.exports = {
             ButtonManager.createButtonRow(['join', 'leave'])
         ];
 
-        // Send the embed
-        const message = await interaction.editReply({
+        // CHANGE: Instead of editReply, send to #matchmaking
+        const matchmakingChannel = interaction.guild.channels.cache.find(
+            (ch) => ch.name === 'matchmaking'
+        );
+        if (!matchmakingChannel) {
+            await interaction.editReply({
+                content: 'Error: Could not find a channel named #matchmaking.',
+                flags: MessageFlags.Ephemeral
+            });
+            return;
+        }
+
+        const message = await matchmakingChannel.send({
             embeds: [embed],
             components: publicComponents
         });
 
-        // Create a thread for this lobby
+        // Create a thread in that channel
         const thread = await message.startThread({
             name: gameCode,
             autoArchiveDuration: 60,
@@ -142,17 +153,23 @@ module.exports = {
         await thread.members.add(creator);
         await thread.send(`<@${creator}> This thread is for match communication.`);
 
-        // Now finalize the lobby data (including the embed we just built) for storing
+        // Finalize lobby data
         lobbyData.started = false;
         lobbyData.matchTime = matchTime;
         lobbyData.joinedUserIds = [creator];
         lobbyData.embed = embed;
         lobbyData.threadId = thread.id;
 
-        // Store in our manager
+        // Store in manager
         lobbyManager.setLobby(message.id, lobbyData);
 
         // Schedule the lobby
         interaction.client.scheduleLobbyStart(message.id, matchTime, message);
+
+        // CHANGE: Inform the user (ephemeral) that the lobby was created
+        await interaction.editReply({
+            content: 'Your matchmaking lobby has been created in #matchmaking!',
+            flags: MessageFlags.Ephemeral
+        });
     }
 };
