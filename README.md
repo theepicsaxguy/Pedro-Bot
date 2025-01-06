@@ -22,45 +22,47 @@ Below is a detailed breakdown of the repository’s structure, how each componen
 ## Project Structure
 
 Pedro-Bot/
+├── buttons/
+│   ├── join.js
+│   ├── leave.js
+│   └── [other-buttons].js
 ├── commands/
 │   ├── admin/
+│   │   ├── schedule.command.js      # New: Schedule Command
 │   │   └── settings.command.js
 │   ├── levels/
 │   │   └── level.command.js
 │   ├── matchmaking/
 │   │   └── matchmaking.command.js
 │   └── manageChannels.command.js
+├── config/
+│   └── constants.js
 ├── events/
-│   ├── ready.js
-│   ├── messageCreate.js
 │   ├── interactionCreate.js
+│   ├── messageCreate.js
+│   ├── ready.js
 │   └── [other-events].js
 ├── models/
 │   ├── Lobby.js
-│   ├── UserXP.js
-│   └── Settings.js
+│   ├── Schedule.js                # New: Schedule Model
+│   ├── Settings.js
+│   └── UserXP.js
 ├── services/
 │   ├── lobbyService.js
-│   ├── userService.js
-│   └── settingsService.js
+│   ├── scheduleService.js          # New: Schedule Service
+│   ├── settingsService.js
+│   └── userService.js
 ├── utils/
 │   ├── ButtonManager.js
 │   ├── database.js
-│   ├── scheduler.js
-│   ├── roleManager.js
-│   ├── threadManager.js
 │   ├── errorHandler.js
 │   ├── matchmakingHelpers.js
-│   └── levelUtils.js
-├── buttons/
-│   ├── join.js
-│   ├── leave.js
-│   └── [other-buttons].js
-├── config/
-│   └── constants.js
+│   ├── scheduler.js                # Updated: Scheduler with scheduling capabilities
+│   ├── roleManager.js
+│   └── threadManager.js
 ├── .env
 ├── docker-compose.yml
-├── index.js
+├── index.js                        # Updated: Enhanced loading and logging
 └── package.json
 
 
