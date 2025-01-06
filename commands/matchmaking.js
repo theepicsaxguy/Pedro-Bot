@@ -5,9 +5,9 @@ const {
     MessageFlags
   } = require('discord.js');
   
-  const ButtonManager = require('../../utils/ButtonManager');
-  const lobbyManager = require('./lobbyManager');
-  const { buildLobbyEmbed } = require('./helpers');
+  const ButtonManager = require('../utils/ButtonManager');
+  const lobbyManager = require('./matchmaking/lobbyManager');
+  const { buildLobbyEmbed } = require('./matchmaking/helpers');
   
   module.exports = {
     data: new SlashCommandBuilder()

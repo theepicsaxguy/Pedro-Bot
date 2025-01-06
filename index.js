@@ -21,7 +21,6 @@ const client = new Client({
 });
 client.commands = new Collection();
 
-
 const TOKEN = process.env.DISCORD_TOKEN;
 const CLIENT_ID = process.env.CLIENT_ID;
 const GUILD_ID = process.env.GUILD_ID;
@@ -32,7 +31,6 @@ client.scheduleLobbyStart = function (lobbyId, matchTime, message) {
     const lobbyData = await lobbyManager.getLobby(lobbyId);
     if (lobbyData && !lobbyData.started) {
       lobbyData.started = true;
-      // Update embed title or any field you want
       lobbyData.embed.title = 'Matchmaking Lobby (Started)';
       await lobbyManager.setLobby(lobbyId, lobbyData);
 
@@ -41,68 +39,92 @@ client.scheduleLobbyStart = function (lobbyId, matchTime, message) {
         components: [ButtonManager.createButtonRow(['join', 'leave'])],
         allowedMentions: { parse: ['roles'] },
       });
+      console.log(`[✅] Lobby ${lobbyId} has started.`);
     }
   });
 };
 
 // === LOAD COMMAND FILES ===
+console.log('[ℹ️] Loading commands...');
 const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
 for (const file of commandFiles) {
   const command = require(`./commands/${file}`);
   client.commands.set(command.data.name, command);
+  console.log(`[✅] Command loaded: ${command.data.name}`);
 }
+console.log(`[✅] Total commands loaded: ${client.commands.size}`);
 
 // === REGISTER COMMANDS (CLEAR THEN PUT) ===
 const rest = new REST({ version: '10' }).setToken(TOKEN);
 (async () => {
   try {
-    // Clear global commands
+    console.log('[ℹ️] Registering commands with Discord...');
     await rest.put(Routes.applicationCommands(CLIENT_ID), { body: [] });
-    // Clear guild commands
     await rest.put(Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID), { body: [] });
-    // Register fresh set
     await rest.put(
       Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID),
       { body: client.commands.map(cmd => cmd.data.toJSON()) }
     );
+    console.log('[✅] Commands registered successfully.');
   } catch (error) {
-    // No console logging
+    console.error('[❌] Command registration failed:', error);
   }
 })();
 
-client.once('ready', () => {
-  console.log('Bot is started and ready!');
-});
-// NEW: messageCreate event to award XP
-client.on('messageCreate', async (message) => {
-  // optional: ignore DMs or bot messages
-  if (!message.guild || message.author.bot) return;
-  // For now, we award 5 XP per message. Adjust as needed
-  await incrementXP(message, 5);
+// === READY EVENT ===
+client.once('ready', async () => {
+  console.log(`[✅] Bot is online as ${client.user.tag}.`);
+
+  // Check MongoDB connection
+  try {
+    const mongoose = require('mongoose');
+    const connectionStatus = mongoose.connection.readyState;
+    if (connectionStatus === 1) {
+      console.log('[✅] MongoDB connection is live.');
+    } else {
+      console.log('[⚠️] MongoDB connection is not live. Check your connection settings.');
+    }
+  } catch (error) {
+    console.error('[❌] Error checking MongoDB connection:', error);
+  }
 });
 
+// === MESSAGE CREATE EVENT ===
+client.on('messageCreate', async (message) => {
+  if (!message.guild || message.author.bot) return;
+  await incrementXP(message, 5);
+  console.log(`[📨] Message received from ${message.author.tag}: "${message.content}" - XP awarded.`);
+});
+
+// === INTERACTION CREATE EVENT ===
 client.on('interactionCreate', async interaction => {
   if (interaction.isCommand()) {
     const command = client.commands.get(interaction.commandName);
-    if (!command) return;
+    if (!command) {
+      console.log(`[❌] Unknown command: ${interaction.commandName}`);
+      return;
+    }
 
     try {
       await command.execute(interaction);
-    } catch (err) {
+      console.log(`[✅] Command executed: ${interaction.commandName}`);
+    } catch (error) {
+      console.error(`[❌] Error executing command: ${interaction.commandName}`, error);
       if (interaction.replied || interaction.deferred) {
         await interaction.followUp({
           content: 'There was an error executing that command.',
-          flags: MessageFlags.Ephemeral
+          flags: Flags.Ephemeral
         });
       } else {
         await interaction.reply({
           content: 'There was an error executing that command.',
-          flags: MessageFlags.Ephemeral
+          flags: Flags.Ephemeral
         });
       }
     }
-
   } else if (interaction.isButton()) {
+    // Handle button interactions
+
     const messageId = interaction.message.id;
     const lobbyData = await lobbyManager.getLobby(messageId);
 
@@ -181,9 +203,16 @@ client.on('interactionCreate', async interaction => {
     }
 
   }
-  // REMOVE the entire custom time modal code:
-  // We no longer handle "customTimeModal" or any "ModalSubmit" for it
 
 });
 
-client.login(TOKEN);
+
+
+
+// === LOGIN THE BOT ===
+client.login(TOKEN).then(() => {
+  console.log('[✅] Bot login successful.');
+}).catch(err => {
+  console.error('[❌] Bot login failed:', err);
+});
+

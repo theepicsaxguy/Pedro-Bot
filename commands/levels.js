@@ -1,7 +1,7 @@
 // commands/levels/level.js
 const { SlashCommandBuilder, MessageFlags } = require('discord.js');
-const UserXP = require('../../models/UserXP');
-const { xpRequiredForLevel } = require('./levelUtils');
+const UserXP = require('../models/UserXP');
+const { xpRequiredForLevel } = require('./levels/levelUtils');
 
 module.exports = {
   data: new SlashCommandBuilder()

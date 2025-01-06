@@ -38,9 +38,9 @@ async function incrementXP(message, xpToAdd) {
   }
 
   // (Optional) cooldown check:
-   if (userDoc.lastMessage && (Date.now() - userDoc.lastMessage.getTime()) < 15000) {
-     return; // user wrote a message less than 15s ago, skip awarding XP
-   }
+  //  if (userDoc.lastMessage && (Date.now() - userDoc.lastMessage.getTime()) < 15000) {
+  //    return; // user wrote a message less than 15s ago, skip awarding XP
+  //  }
 
   // update XP
   userDoc.xp += xpToAdd;
