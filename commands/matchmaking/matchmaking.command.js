@@ -20,6 +20,7 @@ module.exports = {
           { name: 'In 30 Minutes', value: '30_min'  },
           { name: 'In 1 Hour',     value: '1_hour'  },
           { name: 'In 2 Hours',    value: '2_hours' }
+          { name: 'In 4 Hours',    value: '2_hours' }
         )
     )
     .addStringOption(option =>
@@ -85,6 +86,8 @@ module.exports = {
         matchTime = new Date(now.getTime() + 60 * 60 * 1000);
       } else if (timeInput === '2_hours') {
         matchTime = new Date(now.getTime() + 2 * 60 * 60 * 1000);
+      } else if (timeInput === '4_hours') {
+        matchTime = new Date(now.getTime() + 4 * 60 * 60 * 1000);
       }
 
       const unixTime = Math.floor(matchTime.getTime() / 1000);
