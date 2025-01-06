@@ -21,7 +21,48 @@ Below is a detailed breakdown of the repository’s structure, how each componen
 
 ## Project Structure
 
-Pedro-Bot/ ├── commands/ │   ├── matchmaking/ │   │   ├── helpers.js           # Utilities to build/update matchmaking embeds │   │   ├── lobbyManager.js      # Manages lobby data in Mongo (was originally file-based) │   │   └── matchmaking.js       # The /matchmaking command logic (creates a new lobby post) │   ├── levels/ │   │   ├── levelsManager.js     # Core XP logic: awarding XP, checking level-ups, assigning roles │   │   ├── levelUtils.js        # XP / Level formulas (xpRequiredForLevel, etc.) │   │   └── level.js             # The /level command that shows a user's current XP/level │   └── [other-command].js       # Potential future commands, each file exports a SlashCommand ├── models/ │   ├── Lobby.js                 # Mongoose model for storing matchmaking lobbies │   └── UserXP.js                # Mongoose model for storing user XP & level ├── utils/ │   ├── ButtonManager.js         # Generic button creation/management (JOIN/LEAVE, etc.) │   └── database.js              # Mongoose connect() logic shared across the project ├── .env                         # Environment variables (tokens, MONGO_URI, etc.) ├── docker-compose.yml           # Defines two services: pedro-bot and mongodb ├── index.js                     # Main entry point. Registers commands, listens for interactions └── package.json                 # Node.js dependencies
+Pedro-Bot/
+├── commands/
+│   ├── admin/
+│   │   └── settings.command.js
+│   ├── levels/
+│   │   └── level.command.js
+│   ├── matchmaking/
+│   │   └── matchmaking.command.js
+│   └── manageChannels.command.js
+├── events/
+│   ├── ready.js
+│   ├── messageCreate.js
+│   ├── interactionCreate.js
+│   └── [other-events].js
+├── models/
+│   ├── Lobby.js
+│   ├── UserXP.js
+│   └── Settings.js
+├── services/
+│   ├── lobbyService.js
+│   ├── userService.js
+│   └── settingsService.js
+├── utils/
+│   ├── ButtonManager.js
+│   ├── database.js
+│   ├── scheduler.js
+│   ├── roleManager.js
+│   ├── threadManager.js
+│   ├── errorHandler.js
+│   ├── matchmakingHelpers.js
+│   └── levelUtils.js
+├── buttons/
+│   ├── join.js
+│   ├── leave.js
+│   └── [other-buttons].js
+├── config/
+│   └── constants.js
+├── .env
+├── docker-compose.yml
+├── index.js
+└── package.json
+
 
 ### Key Points
 - **`index.js`**: Sets up the Discord client, registers commands, and listens for both interactions (`interactionCreate`) and standard messages (`messageCreate`) for awarding XP.

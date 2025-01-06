@@ -1,27 +1,30 @@
 // commands/levels/levelUtils.js
 
 /**
- * For example: xp needed = 100 * (level^2).
- * Feel free to adjust to taste.
+ * Calculate the XP required for a given level.
+ * Example formula: 100 * (level^3)
+ * @param {Number} level - The target level.
+ * @returns {Number}
  */
 function xpRequiredForLevel(level) {
-    return 100 * (level ** 3);
+  return 100 * (level ** 3);
+}
+
+/**
+ * Calculate the current level based on total XP.
+ * Loops from level 0 upwards until the required XP exceeds total XP.
+ * @param {Number} xp - The total XP.
+ * @returns {Number}
+ */
+function calculateLevelFromXP(xp) {
+  let lvl = 0;
+  while (xp >= xpRequiredForLevel(lvl + 1)) {
+    lvl++;
   }
-  
-  /**
-   * Given total XP, figure out which level the user is on.
-   * This loops from 1 upward until the next level is too large.
-   */
-  function calculateLevelFromXP(xp) {
-    let lvl = 0;
-    while (xp >= xpRequiredForLevel(lvl + 1)) {
-      lvl++;
-    }
-    return lvl;
-  }
-  
-  module.exports = {
-    xpRequiredForLevel,
-    calculateLevelFromXP,
-  };
-  
+  return lvl;
+}
+
+module.exports = {
+  xpRequiredForLevel,
+  calculateLevelFromXP,
+};

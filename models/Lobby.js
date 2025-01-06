@@ -2,7 +2,7 @@
 const mongoose = require('../utils/database');
 
 const lobbySchema = new mongoose.Schema({
-  _id: String, // We'll store the "message ID" as the primary key
+  _id: String, // "message ID" as the primary key
   gameCode: String,
   creator: String,
   unixTime: Number,
@@ -16,7 +16,7 @@ const lobbySchema = new mongoose.Schema({
   embed: Object,
   threadId: String,
 }, {
-  versionKey: false
+  versionKey: false,
 });
 
 module.exports = mongoose.model('Lobby', lobbySchema);

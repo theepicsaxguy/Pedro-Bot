@@ -8,7 +8,7 @@ const userXPSchema = new mongoose.Schema({
   lastMessage: { type: Date, default: null },
   excludedChannels: { type: [String], default: [] },
 }, {
-  versionKey: false
+  versionKey: false,
 });
 
 module.exports = mongoose.model('UserXP', userXPSchema);
