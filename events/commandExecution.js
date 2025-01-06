@@ -1,12 +1,19 @@
 // events/commandExecution.js
+
 const errorHandler = require('../utils/errorHandler');
 
 module.exports = {
   name: 'commandExecution',
   once: false,
-  async execute(commandName, args) {
+  /**
+   * Executes a scheduled command.
+   * @param {String} commandName - The name of the command to execute.
+   * @param {Object} args - The arguments for the command.
+   * @param {Client} client - The Discord client instance.
+   */
+  async execute(commandName, args, client) { // Added 'client' parameter
     try {
-      const command = this.client.commands.get(commandName);
+      const command = client.commands.get(commandName); // Use 'client' directly
       if (!command) {
         console.warn(`[⚠️] Command "/${commandName}" not found for scheduled execution.`);
         return;
