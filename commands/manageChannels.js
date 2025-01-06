@@ -1,8 +1,4 @@
-const {
-    SlashCommandBuilder,
-    ActionRowBuilder,
-    MessageFlags
-  } = require('discord.js');
+const { SlashCommandBuilder } = require('@discordjs/builders');
 const UserXP = require('../models/UserXP');
 
 module.exports = {
@@ -31,10 +27,17 @@ module.exports = {
         .setDescription('List all excluded channels')),
 
   async execute(interaction) {
+    // Check if the user has admin permissions
+    if (!interaction.member.permissions.has('ADMINISTRATOR')) {
+      return interaction.reply({
+        content: '❌ You do not have permission to use this command.',
+        ephemeral: true
+      });
+    }
+
     const subcommand = interaction.options.getSubcommand();
     const channel = interaction.options.getChannel('channel');
 
-    // Fetch or create global settings document
     let globalSettings = await UserXP.findById('globalSettings').exec();
     if (!globalSettings) {
       globalSettings = new UserXP({ _id: 'globalSettings', excludedChannels: [] });
@@ -48,6 +51,7 @@ module.exports = {
         globalSettings.excludedChannels.push(channel.id);
         await globalSettings.save();
         await interaction.reply(`✅ Channel <#${channel.id}> has been added to the excluded list.`);
+        console.log(`[ℹ️] ${interaction.user.tag} added channel ${channel.id} to excluded channels.`);
       }
     } else if (subcommand === 'remove') {
       if (!globalSettings.excludedChannels.includes(channel.id)) {
@@ -56,6 +60,7 @@ module.exports = {
         globalSettings.excludedChannels = globalSettings.excludedChannels.filter(id => id !== channel.id);
         await globalSettings.save();
         await interaction.reply(`✅ Channel <#${channel.id}> has been removed from the excluded list.`);
+        console.log(`[ℹ️] ${interaction.user.tag} removed channel ${channel.id} from excluded channels.`);
       }
     } else if (subcommand === 'list') {
       if (globalSettings.excludedChannels.length === 0) {
