@@ -1,20 +1,6 @@
-// commands/levels/levelsManager.js
 const UserXP = require('../../models/UserXP');
 const { calculateLevelFromXP } = require('./levelUtils');
 const { MessageFlags } = require('discord.js');
-
-/**
- * Example ENV var: LEVEL_ROLE_MAP='{"1":"ROLE_ID_LVL1","2":"ROLE_ID_LVL2"}'
- * We'll parse that once here.
- */
-let levelRoleMap = {};
-if (process.env.LEVEL_ROLE_MAP) {
-  try {
-    levelRoleMap = JSON.parse(process.env.LEVEL_ROLE_MAP);
-  } catch {
-    levelRoleMap = {};
-  }
-}
 
 /**
  * Award XP for a message, check if user levels up, assign any matching role.
@@ -23,10 +9,24 @@ async function incrementXP(message, xpToAdd) {
   // Usually skip bot messages
   if (message.author.bot) return;
 
+  // Fetch the global settings (use a static ID for simplicity)
+  let globalSettings = await UserXP.findById('globalSettings').exec();
+  if (!globalSettings) {
+    // If not found, create a default settings document
+    globalSettings = new UserXP({
+      _id: 'globalSettings',
+      excludedChannels: [],
+    });
+    await globalSettings.save();
+  }
+
+  // Skip XP in excluded channels
+  if (globalSettings.excludedChannels.includes(message.channel.id)) return;
+
   const userId = message.author.id;
   const guild = message.guild;
 
-  // fetch or create doc
+  // Fetch or create document for the user
   let userDoc = await UserXP.findById(userId).exec();
   if (!userDoc) {
     userDoc = new UserXP({
@@ -38,11 +38,11 @@ async function incrementXP(message, xpToAdd) {
   }
 
   // (Optional) cooldown check:
-  //  if (userDoc.lastMessage && (Date.now() - userDoc.lastMessage.getTime()) < 15000) {
-  //    return; // user wrote a message less than 15s ago, skip awarding XP
-  //  }
+  if (userDoc.lastMessage && (Date.now() - userDoc.lastMessage.getTime()) < 15000) {
+    return; // User wrote a message less than 15s ago, skip awarding XP
+  }
 
-  // update XP
+  // Update XP
   userDoc.xp += xpToAdd;
   userDoc.lastMessage = new Date();
 
@@ -51,7 +51,7 @@ async function incrementXP(message, xpToAdd) {
 
   if (newLevel > oldLevel) {
     userDoc.level = newLevel;
-    await userDoc.save(); // save doc
+    await userDoc.save(); // Save document
 
     // Check if there's a role for that level
     const roleId = levelRoleMap[String(newLevel)];
@@ -59,12 +59,10 @@ async function incrementXP(message, xpToAdd) {
       const member = await guild.members.fetch(userId);
       if (member) {
         await member.roles.add(roleId);
-        // (Optional) remove old level role if you want only one
-        // ...
 
         await message.channel.send({
           content: `<@${userId}> just advanced to **Level ${newLevel}**! Congrats!`,
-          flags: MessageFlags.SuppressEmbeds
+          flags: MessageFlags.SuppressEmbeds,
         });
       }
     } else {
@@ -72,7 +70,7 @@ async function incrementXP(message, xpToAdd) {
       await message.channel.send(`<@${userId}> just advanced to **Level ${newLevel}**! Congrats!`);
     }
   } else {
-    // just save
+    // Just save
     await userDoc.save();
   }
 }

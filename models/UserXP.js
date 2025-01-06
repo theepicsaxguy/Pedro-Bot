@@ -1,14 +1,12 @@
 // models/UserXP.js
 const mongoose = require('../utils/database');
 
-/**
- * Tracks each user's XP/Level by Discord user ID.
- */
 const userXPSchema = new mongoose.Schema({
-  _id: String,       // The user's Discord ID
+  _id: String,
   xp: { type: Number, default: 0 },
   level: { type: Number, default: 0 },
-  lastMessage: { type: Date, default: null }, // for optional cooldown logic
+  lastMessage: { type: Date, default: null },
+  excludedChannels: { type: [String], default: [] }, // Channels excluded from XP
 }, {
   versionKey: false
 });
