@@ -4,7 +4,7 @@ const ButtonManager = require('../../utils/ButtonManager');
 const lobbyService = require('../../services/lobbyService');
 const scheduler = require('../../utils/scheduler');
 const threadManager = require('../../utils/threadManager');
-const { buildLobbyEmbed } = require('./helpers');
+const { buildLobbyEmbed } = require('../../utils/matchmakingHelpers');
 const errorHandler = require('../../utils/errorHandler');
 
 module.exports = {

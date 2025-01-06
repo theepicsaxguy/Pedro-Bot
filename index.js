@@ -23,15 +23,23 @@ const client = new Client({
 });
 client.commands = new Collection();
 
-// Load Commands Recursively, Only Loading Files Ending with .command.js
+/**
+ * Recursively loads command files ending with `.command.js` from the specified directory.
+ * @param {string} dir - The directory to load commands from.
+ * @returns {Object} - An object containing the count of loaded and failed commands.
+ */
 const loadCommands = (dir = './commands') => {
   const commandFiles = fs.readdirSync(dir, { withFileTypes: true });
+  let loadedCount = 0;
+  let failedCount = 0;
 
   for (const file of commandFiles) {
-    const filePath = path.join(dir, file.name);
+    const filePath = path.resolve(__dirname, dir, file.name);
 
     if (file.isDirectory()) {
-      loadCommands(filePath); // Recursively load subdirectories
+      const { loaded, failed } = loadCommands(filePath); // Recursively load subdirectories
+      loadedCount += loaded;
+      failedCount += failed;
     } else if (file.isFile() && file.name.endsWith('.command.js')) {
       try {
         const command = require(filePath);
@@ -39,33 +47,52 @@ const loadCommands = (dir = './commands') => {
         // Validate command structure
         if (!command?.data?.name) {
           console.warn(`[⚠️] Skipping invalid command file: ${filePath}`);
+          failedCount++;
           continue;
         }
 
         client.commands.set(command.data.name, command);
         console.log(`[✅] Command loaded: ${command.data.name}`);
+        loadedCount++;
       } catch (error) {
         console.error(`[❌] Failed to load command from ${filePath}:`, error);
+        failedCount++;
       }
     }
   }
+
+  return { loaded: loadedCount, failed: failedCount };
 };
-loadCommands();
+
+// Load all commands and log the results
+const { loaded: commandsLoaded, failed: commandsFailed } = loadCommands();
+console.log(`[ℹ️] Total Commands Loaded: ${commandsLoaded}, Failed: ${commandsFailed}`);
 
 // Load Events
 const loadEvents = () => {
   const eventsPath = path.join(__dirname, 'events');
   const eventFiles = fs.readdirSync(eventsPath).filter(file => file.endsWith('.js'));
+  let loaded = 0;
+  let failed = 0;
+
   for (const file of eventFiles) {
     const filePath = path.join(eventsPath, file);
-    const event = require(filePath);
-    if (event.once) {
-      client.once(event.name, (...args) => event.execute(...args, client));
-    } else {
-      client.on(event.name, (...args) => event.execute(...args, client));
+    try {
+      const event = require(filePath);
+      if (event.once) {
+        client.once(event.name, (...args) => event.execute(...args, client));
+      } else {
+        client.on(event.name, (...args) => event.execute(...args, client));
+      }
+      console.log(`[✅] Event loaded: ${event.name}`);
+      loaded++;
+    } catch (error) {
+      console.error(`[❌] Failed to load event from ${filePath}:`, error);
+      failed++;
     }
-    console.log(`[✅] Event loaded: ${event.name}`);
   }
+
+  console.log(`[ℹ️] Total Events Loaded: ${loaded}, Failed: ${failed}`);
 };
 loadEvents();
 

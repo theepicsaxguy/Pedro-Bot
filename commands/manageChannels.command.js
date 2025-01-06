@@ -1,5 +1,5 @@
-// commands/manageChannels.js
-const { SlashCommandBuilder, PermissionFlagsBits } = require('@discordjs/builders');
+// commands/manageChannels.command.js
+const { SlashCommandBuilder, PermissionsBitField } = require('discord.js'); // Updated import
 const UserXP = require('../models/UserXP');
 const { MessageFlags } = require('discord.js');
 const errorHandler = require('../utils/errorHandler');
@@ -8,7 +8,7 @@ module.exports = {
   data: new SlashCommandBuilder()
     .setName('managechannels')
     .setDescription('Manage the list of channels excluded from XP tracking')
-    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+    .setDefaultMemberPermissions(PermissionsBitField.Flags.Administrator) // Updated usage
     .addSubcommand(subcommand =>
       subcommand
         .setName('add')
