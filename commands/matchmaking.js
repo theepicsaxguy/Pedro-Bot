@@ -125,7 +125,8 @@ const {
       }
   
       // Fix the role mention (no "Cc:"), just the role itself
-      const MATCHMAKING_ROLE_ID = process.env.MATCHMAKING_ROLE_ID || null;
+      const MATCHMAKING_ROLE_ID = '1324150202470371358' || null;
+
       const roleMention = MATCHMAKING_ROLE_ID ? `<@&${MATCHMAKING_ROLE_ID}>` : '@Matchmaking';
   
       // Actually ping the role with no prefix
