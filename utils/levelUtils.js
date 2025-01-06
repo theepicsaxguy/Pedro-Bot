@@ -6,10 +6,10 @@
  * @param {Number} level - The target level.
  * @returns {Number}
  */
-function xpRequiredForLevel(level) {
-  return 100 * (level ** 3);
-}
 
+function xpRequiredForLevel(level) {
+  return 50* (level ** 2);
+}
 /**
  * Calculate the current level based on total XP.
  * Loops from level 0 upwards until the required XP exceeds total XP.
