@@ -10,9 +10,17 @@ require('./utils/database');
 const ButtonManager = require('./utils/ButtonManager');
 const lobbyManager = require('./commands/matchmaking/lobbyManager');
 const { updateLobbyEmbed } = require('./commands/matchmaking/helpers');
+const { incrementXP } = require('./commands/levels/levelsManager');
 
-const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+const client = new Client({
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.MessageContent
+  ]
+});
 client.commands = new Collection();
+
 
 const TOKEN = process.env.DISCORD_TOKEN;
 const CLIENT_ID = process.env.CLIENT_ID;
@@ -64,6 +72,13 @@ const rest = new REST({ version: '10' }).setToken(TOKEN);
 
 client.once('ready', () => {
   console.log('Bot is started and ready!');
+});
+// NEW: messageCreate event to award XP
+client.on('messageCreate', async (message) => {
+  // optional: ignore DMs or bot messages
+  if (!message.guild || message.author.bot) return;
+  // For now, we award 5 XP per message. Adjust as needed
+  await incrementXP(message, 5);
 });
 
 client.on('interactionCreate', async interaction => {
@@ -165,7 +180,7 @@ client.on('interactionCreate', async interaction => {
         });
     }
 
-  } 
+  }
   // REMOVE the entire custom time modal code:
   // We no longer handle "customTimeModal" or any "ModalSubmit" for it
 
