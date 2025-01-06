@@ -1,4 +1,4 @@
-// commands/levels/level.js
+// commands/level.js
 const { SlashCommandBuilder, MessageFlags } = require('discord.js');
 const UserXP = require('../models/UserXP');
 const { xpRequiredForLevel } = require('./levels/levelUtils');

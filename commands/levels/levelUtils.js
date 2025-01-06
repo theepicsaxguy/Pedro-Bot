@@ -5,7 +5,7 @@
  * Feel free to adjust to taste.
  */
 function xpRequiredForLevel(level) {
-    return 100 * (level ** 2);
+    return 100 * (level ** 3);
   }
   
   /**

@@ -1,4 +1,4 @@
-// commands/admin/manageChannels.js
+// commands/manageChannels.js
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const UserXP = require('../models/UserXP');
 

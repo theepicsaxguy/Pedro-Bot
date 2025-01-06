@@ -1,3 +1,4 @@
+//Index.js
 require('dotenv').config();
 const fs = require('fs');
 const schedule = require('node-schedule');
@@ -93,7 +94,6 @@ client.once('ready', async () => {
 client.on('messageCreate', async (message) => {
   if (!message.guild || message.author.bot) return;
   await incrementXP(message, 5);
-  console.log(`[📨] Message received from ${message.author.tag}: "${message.content}" - XP awarded.`);
 });
 
 // === INTERACTION CREATE EVENT ===
