@@ -1,5 +1,5 @@
 // commands/matchmaking/lobbyManager.js
-const LobbyModel = require('../../../models/Lobby');
+const LobbyModel = require('../../models/Lobby');
 
 module.exports = {
   /**
