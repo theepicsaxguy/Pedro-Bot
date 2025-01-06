@@ -155,7 +155,7 @@ module.exports = {
       errorHandler(error, 'Matchmaking Command - execute');
       await interaction.reply({
         content: '❌ There was an error creating the matchmaking lobby.',
-        ephemeral: true
+        flags: MessageFlags.Ephemeral,
       }).catch(() => {});
     }
   },

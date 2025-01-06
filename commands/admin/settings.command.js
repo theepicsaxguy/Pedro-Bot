@@ -43,14 +43,14 @@ module.exports = {
       if (level < 1) {
         return interaction.reply({
           content: '❌ Level must be at least 1.',
-          ephemeral: true,
+          flags: MessageFlags.Ephemeral,
         });
       }
 
       await settingsService.setRoleForLevel(level, role.id);
       return interaction.reply({
         content: `✅ Role <@&${role.id}> has been set for Level ${level}.`,
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     }
 
@@ -60,14 +60,14 @@ module.exports = {
       if (level < 1) {
         return interaction.reply({
           content: '❌ Level must be at least 1.',
-          ephemeral: true,
+          flags: MessageFlags.Ephemeral,
         });
       }
 
       await settingsService.setRoleForLevel(level, null);
       return interaction.reply({
         content: `✅ Role for Level ${level} has been removed.`,
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     }
 
@@ -76,7 +76,7 @@ module.exports = {
       if (Object.keys(roleMap).length === 0) {
         return interaction.reply({
           content: '📋 No role mappings have been set.',
-          ephemeral: true,
+          flags: MessageFlags.Ephemeral,
         });
       }
 
@@ -87,7 +87,7 @@ module.exports = {
 
       return interaction.reply({
         content: response,
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     }
   },

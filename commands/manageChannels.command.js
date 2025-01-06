@@ -48,14 +48,14 @@ module.exports = {
         if (globalSettings.excludedChannels.includes(channel.id)) {
           await interaction.reply({
             content: `🔴 Channel <#${channel.id}> is already excluded.`,
-            ephemeral: true
+            flags: MessageFlags.Ephemeral,
           });
         } else {
           globalSettings.excludedChannels.push(channel.id);
           await globalSettings.save();
           await interaction.reply({
             content: `✅ Channel <#${channel.id}> has been added to the excluded list.`,
-            ephemeral: true
+            flags: MessageFlags.Ephemeral,
           });
           console.log(`[ℹ️] ${interaction.user.tag} added channel ${channel.id} to excluded channels.`);
         }
@@ -63,14 +63,14 @@ module.exports = {
         if (!globalSettings.excludedChannels.includes(channel.id)) {
           await interaction.reply({
             content: `🔴 Channel <#${channel.id}> is not in the excluded list.`,
-            ephemeral: true
+            flags: MessageFlags.Ephemeral,
           });
         } else {
           globalSettings.excludedChannels = globalSettings.excludedChannels.filter(id => id !== channel.id);
           await globalSettings.save();
           await interaction.reply({
             content: `✅ Channel <#${channel.id}> has been removed from the excluded list.`,
-            ephemeral: true
+            flags: MessageFlags.Ephemeral,
           });
           console.log(`[ℹ️] ${interaction.user.tag} removed channel ${channel.id} from excluded channels.`);
         }
@@ -78,13 +78,13 @@ module.exports = {
         if (globalSettings.excludedChannels.length === 0) {
           await interaction.reply({
             content: '📋 No channels are currently excluded from XP tracking.',
-            ephemeral: true
+            flags: MessageFlags.Ephemeral,
           });
         } else {
           const channelList = globalSettings.excludedChannels.map(id => `<#${id}>`).join('\n');
           await interaction.reply({
             content: `📋 **Excluded Channels:**\n${channelList}`,
-            ephemeral: true
+            flags: MessageFlags.Ephemeral,
           });
         }
       }
@@ -92,7 +92,7 @@ module.exports = {
       errorHandler(error, 'ManageChannels Command - execute');
       await interaction.reply({
         content: '❌ There was an error managing the excluded channels.',
-        ephemeral: true
+        flags: MessageFlags.Ephemeral,
       }).catch(() => {});
     }
   },

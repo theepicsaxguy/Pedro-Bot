@@ -28,7 +28,7 @@ module.exports = {
       errorHandler(error, 'Level Command - execute');
       await interaction.reply({
         content: '❌ There was an error fetching your level.',
-        ephemeral: true
+        flags: MessageFlags.Ephemeral,
       }).catch(() => {});
     }
   }
