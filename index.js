@@ -23,9 +23,6 @@ const client = new Client({
 });
 client.commands = new Collection();
 
-// Export client for scheduler and other modules
-module.exports = client;
-
 // Load Commands Recursively, Only Loading Files Ending with .command.js
 const loadCommands = (dir = './commands') => {
   const commandFiles = fs.readdirSync(dir, { withFileTypes: true });
@@ -62,7 +59,10 @@ const loadCommands = (dir = './commands') => {
 
   return { loaded: loadedCount, failed: failedCount };
 };
+
 loadCommands();
+const { loaded: commandsLoaded, failed: commandsFailed } = loadCommands();
+console.log(`[ℹ️] Total Commands Loaded: ${commandsLoaded}, Failed: ${commandsFailed}`);
 
 // Load Events
 const loadEvents = () => {
@@ -101,9 +101,9 @@ const registerCommands = async () => {
 
   try {
     console.log('[ℹ️] Registering commands with Discord...');
-    // Clear existing global commands
-    await rest.put(Routes.applicationCommands(CLIENT_ID), { body: [] });
-    console.log('[✅] Global commands cleared.');
+    // // Clear existing global commands
+    // await rest.put(Routes.applicationCommands(CLIENT_ID), { body: [] });
+    // console.log('[✅] Global commands cleared.');
 
     // Register guild-specific commands
     const commandsData = client.commands.map(cmd => cmd.data.toJSON());
@@ -114,35 +114,6 @@ const registerCommands = async () => {
   }
 };
 registerCommands();
-
-// Handle custom commandExecution event
-client.on('commandExecution', async (commandName, args) => {
-  try {
-    const command = client.commands.get(commandName);
-    if (!command) {
-      console.warn(`[⚠️] Command "/${commandName}" not found for scheduled execution.`);
-      return;
-    }
-
-    // Create a mock interaction
-    // Note: Executing a command programmatically can be complex. One approach is to refactor command execution logic into a separate function.
-    // For simplicity, we'll assume that commands can be executed directly by passing a mock interaction.
-
-    // Refactor command execution logic if necessary to allow direct invocation.
-
-    // Example:
-    // await command.execute(mockInteraction);
-
-    // Since creating a fully functional mock interaction is beyond the scope here, consider refactoring commands to allow direct invocation.
-
-    console.log(`[ℹ️] Executing scheduled command "/${commandName}" with args: ${JSON.stringify(args)}`);
-    
-    // Emit a 'scheduledCommand' event which commands can listen to
-    client.emit('scheduledCommand', commandName, args);
-  } catch (error) {
-    errorHandler(error, `Scheduler - commandExecution "${commandName}"`);
-  }
-});
 
 // Login the Bot
 client.login(process.env.DISCORD_TOKEN)

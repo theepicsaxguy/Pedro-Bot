@@ -1,23 +1,20 @@
 // utils/scheduler.js
 const cron = require('node-cron');
 const scheduleService = require('../services/scheduleService');
-const client = require('../index'); // Ensure that client is exported from index.js
 const errorHandler = require('./errorHandler');
 
-// Exported as a singleton
 class Scheduler {
   constructor() {
     this.jobs = new Map();
-    this.initialize();
-
-    // Listen for scheduledCommand event to execute commands
-    client.on('scheduledCommand', this.executeScheduledCommand.bind(this));
   }
 
   /**
    * Initialize the scheduler by loading all schedules from the database and scheduling them.
+   * @param {Client} client - The Discord client instance.
    */
-  async initialize() {
+  async initialize(client) {
+    this.client = client;
+
     try {
       const schedules = await scheduleService.getAllSchedules();
       schedules.forEach(schedule => {
@@ -27,6 +24,9 @@ class Scheduler {
     } catch (error) {
       errorHandler(error, 'Scheduler - initialize');
     }
+
+    // Listen for commandExecution event
+    this.client.on('commandExecution', this.executeScheduledCommand.bind(this));
   }
 
   /**
@@ -41,7 +41,7 @@ class Scheduler {
       }
 
       const task = cron.schedule(schedule.frequency, () => {
-        client.emit('commandExecution', schedule.commandName, schedule.args);
+        this.client.emit('commandExecution', schedule.commandName, schedule.args);
       });
 
       this.jobs.set(schedule.name, task);
@@ -77,15 +77,13 @@ class Scheduler {
    */
   async executeScheduledCommand(commandName, args) {
     try {
-      const command = client.commands.get(commandName);
+      const command = this.client.commands.get(commandName);
       if (!command) {
         console.warn(`[⚠️] Command "/${commandName}" not found for scheduled execution.`);
         return;
       }
 
-      // Refactor command execution logic to allow direct invocation
-      // Example: If commands are refactored to export an execute function that accepts args directly
-      if (typeof command.execute === 'function') {
+      if (typeof command.executeScheduled === 'function') {
         await command.executeScheduled(args);
         console.log(`[✅] Executed scheduled command "/${commandName}" with args: ${JSON.stringify(args)}`);
       } else {

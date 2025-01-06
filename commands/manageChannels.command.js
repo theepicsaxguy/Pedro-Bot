@@ -8,7 +8,7 @@ module.exports = {
   data: new SlashCommandBuilder()
     .setName('managechannels')
     .setDescription('Manage the list of channels excluded from XP tracking')
-    .setDefaultMemberPermissions(PermissionsBitField.Flags.Administrator) // Updated usage
+    .setDefaultMemberPermissions(PermissionsBitField.Flags.Administrator)
     .addSubcommand(subcommand =>
       subcommand
         .setName('add')
