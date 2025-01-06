@@ -1,3 +1,4 @@
+// commands/admin/manageChannels.js
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const UserXP = require('../models/UserXP');
 
@@ -5,6 +6,7 @@ module.exports = {
   data: new SlashCommandBuilder()
     .setName('managechannels')
     .setDescription('Manage the list of channels excluded from XP tracking')
+    .setDefaultMemberPermissions(0x00000008n) // Correct: Bitfield for ADMINISTRATOR
     .addSubcommand(subcommand =>
       subcommand
         .setName('add')
