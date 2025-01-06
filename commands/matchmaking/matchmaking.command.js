@@ -1,4 +1,4 @@
-// commands/matchmaking/matchmaking.js
+// commands/matchmaking/matchmaking.command.js
 const { SlashCommandBuilder, ActionRowBuilder, MessageFlags } = require('discord.js');
 const ButtonManager = require('../../utils/ButtonManager');
 const lobbyService = require('../../services/lobbyService');

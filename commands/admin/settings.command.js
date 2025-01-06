@@ -1,5 +1,5 @@
-// commands/admin/settings.js
-const { SlashCommandBuilder, PermissionFlagsBits, MessageFlags } = require('discord.js');
+// commands/admin/settings.command.js
+const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
 const settingsService = require('../../services/settingsService');
 const config = require('../../config/constants');
 
@@ -32,7 +32,7 @@ module.exports = {
       subcommand
         .setName('get-roles')
         .setDescription('Get all role mappings for user levels')),
-  
+
   async execute(interaction) {
     const subcommand = interaction.options.getSubcommand();
 

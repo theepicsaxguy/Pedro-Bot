@@ -2,8 +2,7 @@
 require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
-const { Client, GatewayIntentBits, Collection } = require('discord.js');
-const { REST, Routes } = require('discord.js');
+const { Client, GatewayIntentBits, Collection, REST, Routes } = require('discord.js');
 const scheduler = require('./utils/scheduler');
 const errorHandler = require('./utils/errorHandler');
 const config = require('./config/constants');
@@ -24,8 +23,7 @@ const client = new Client({
 });
 client.commands = new Collection();
 
-
-
+// Load Commands Recursively, Only Loading Files Ending with .command.js
 const loadCommands = (dir = './commands') => {
   const commandFiles = fs.readdirSync(dir, { withFileTypes: true });
 
@@ -34,7 +32,7 @@ const loadCommands = (dir = './commands') => {
 
     if (file.isDirectory()) {
       loadCommands(filePath); // Recursively load subdirectories
-    } else if (file.isFile() && file.name.endsWith('.js')) {
+    } else if (file.isFile() && file.name.endsWith('.command.js')) {
       try {
         const command = require(filePath);
 
@@ -52,9 +50,7 @@ const loadCommands = (dir = './commands') => {
     }
   }
 };
-
 loadCommands();
-
 
 // Load Events
 const loadEvents = () => {
@@ -82,13 +78,14 @@ const registerCommands = async () => {
 
   try {
     console.log('[ℹ️] Registering commands with Discord...');
+    // Clear existing global commands
     await rest.put(Routes.applicationCommands(CLIENT_ID), { body: [] });
-    await rest.put(Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID), { body: [] });
-    await rest.put(
-      Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID),
-      { body: client.commands.map(cmd => cmd.data.toJSON()) }
-    );
-    console.log('[✅] Commands registered successfully.');
+    console.log('[✅] Global commands cleared.');
+
+    // Register guild-specific commands
+    const commandsData = client.commands.map(cmd => cmd.data.toJSON());
+    await rest.put(Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID), { body: commandsData });
+    console.log('[✅] Guild commands registered successfully.');
   } catch (error) {
     errorHandler(error, 'Command Registration');
   }

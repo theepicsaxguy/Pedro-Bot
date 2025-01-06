@@ -1,6 +1,6 @@
 // buttons/join.js
 const lobbyService = require('../services/lobbyService');
-const { updateLobbyEmbed } = require('../commands/matchmaking/helpers');
+const { updateLobbyEmbed } = require('../utils/matchmakingHelpers.js');
 const ButtonManager = require('../utils/ButtonManager');
 const threadManager = require('../utils/threadManager');
 const config = require('../config/constants');

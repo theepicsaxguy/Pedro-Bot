@@ -1,7 +1,7 @@
 // utils/scheduler.js
 const schedule = require('node-schedule');
 const lobbyService = require('../services/lobbyService');
-const { updateLobbyEmbed } = require('../commands/matchmaking/helpers');
+const { updateLobbyEmbed } = require('../utils/matchmakingHelpers.js');
 const ButtonManager = require('./ButtonManager');
 const errorHandler = require('./errorHandler');
 

@@ -1,6 +1,6 @@
 // commands/levels/levelsManager.js
 const userService = require('../../services/userService');
-const levelUtils = require('./levelUtils');
+const levelUtils = require('../../utils/levelUtils');
 const roleManager = require('../../utils/roleManager');
 const settingsService = require('../../services/settingsService');
 const { MessageFlags } = require('discord.js');

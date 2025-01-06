@@ -1,6 +1,6 @@
-// commands/matchmaking/helpers.js
+// utils/matchmakingHelpers.js.js
 const { EmbedBuilder } = require('discord.js');
-const config = require('../../config/constants');
+const config = require('../config/constants');
 
 function buildLobbyEmbed(lobbyData) {
   return new EmbedBuilder()
@@ -31,7 +31,7 @@ async function updateLobbyEmbed(interaction, lobbyData) {
       allowedMentions: { parse: ['roles'] },
     });
   } catch (error) {
-    require('../..//utils/errorHandler')(error, 'Matchmaking Helpers - updateLobbyEmbed');
+    require('./errorHandler')(error, 'Matchmaking Helpers - updateLobbyEmbed');
   }
 }
 

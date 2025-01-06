@@ -1,7 +1,7 @@
-// commands/levels/level.js
+// commands/levels/level.command.js
 const { SlashCommandBuilder, MessageFlags } = require('discord.js');
 const userService = require('../../services/userService');
-const levelUtils = require('./levelUtils');
+const levelUtils = require('../../utils/levelUtils');
 const errorHandler = require('../../utils/errorHandler');
 
 module.exports = {

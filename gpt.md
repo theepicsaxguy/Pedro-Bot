@@ -22,7 +22,7 @@ require('./utils/database');
 
 const ButtonManager = require('./utils/ButtonManager');
 const lobbyManager = require('./commands/matchmaking/lobbyManager');
-const { updateLobbyEmbed } = require('./commands/matchmaking/helpers');
+const { updateLobbyEmbed } = require('./utils/matchmakingHelpers.js');
 const { incrementXP } = require('./commands/levels/levelsManager');
 
 const client = new Client({
@@ -593,7 +593,7 @@ const {
   };
   
 
-  // commands/matchmaking/helpers.js
+  // utils/matchmakingHelpers.js.js
 const { EmbedBuilder } = require('discord.js');
 const ButtonManager = require('../../utils/ButtonManager');
 
