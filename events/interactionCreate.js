@@ -4,6 +4,7 @@ const joinButton = require('../buttons/join');
 const leaveButton = require('../buttons/leave');
 const errorHandler = require('../utils/errorHandler');
 const config = require('../config/constants');
+const ReactionRole = require('../models/ReactionRole');
 
 module.exports = {
   name: 'interactionCreate',
@@ -38,6 +39,9 @@ module.exports = {
           await joinButton.execute(interaction);
         } else if (interaction.customId === config.BUTTON_IDS.LEAVE) {
           await leaveButton.execute(interaction);
+        } else if (interaction.customId.startsWith('reactionrole_')) {
+          // Handle Reaction Role button interactions
+          await handleReactionRoleButton(interaction, client);
         } else {
           await interaction.reply({
             content: '❌ Unknown interaction.',
@@ -56,3 +60,68 @@ module.exports = {
     }
   },
 };
+
+/**
+ * Handles Reaction Role button interactions.
+ * @param {ButtonInteraction} interaction - The button interaction.
+ * @param {Client} client - The Discord client instance.
+ */
+async function handleReactionRoleButton(interaction, client) {
+  const { guildId, messageId, customId, user } = interaction;
+
+  // Fetch the ReactionRole configuration
+  const reactionRole = await ReactionRole.findOne({ guildId, messageId }).exec();
+  if (!reactionRole) {
+    console.warn(`[⚠️] No ReactionRole configuration found for message ID: ${messageId}`);
+    return interaction.reply({
+      content: '❌ Reaction role configuration not found.',
+      ephemeral: true,
+    });
+  }
+
+  // Extract the index from customId, e.g., 'reactionrole_0'
+  const parts = customId.split('_');
+  if (parts.length < 2) {
+    return interaction.reply({
+      content: '❌ Invalid reaction role button.',
+      ephemeral: true,
+    });
+  }
+
+  const index = parseInt(parts[1], 10);
+  if (isNaN(index) || index < 0 || index >= reactionRole.roles.length) {
+    return interaction.reply({
+      content: '❌ Invalid reaction role button.',
+      ephemeral: true,
+    });
+  }
+
+  const roleObj = reactionRole.roles[index];
+  const role = interaction.guild.roles.cache.get(roleObj.roleId);
+  if (!role) {
+    return interaction.reply({
+      content: `❌ The role associated with this button no longer exists.`,
+      ephemeral: true,
+    });
+  }
+
+  const member = await interaction.guild.members.fetch(user.id);
+
+  if (member.roles.cache.has(role.id)) {
+    // Remove the role
+    await member.roles.remove(role);
+    await interaction.reply({
+      content: `✅ The role <@&${role.id}> has been removed from you.`,
+      ephemeral: true,
+    });
+    console.log(`[✅] Removed role <@&${role.id}> from user ${user.tag}`);
+  } else {
+    // Add the role
+    await member.roles.add(role);
+    await interaction.reply({
+      content: `✅ The role <@&${role.id}> has been added to you.`,
+      ephemeral: true,
+    });
+    console.log(`[✅] Added role <@&${role.id}> to user ${user.tag}`);
+  }
+}

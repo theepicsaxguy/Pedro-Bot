@@ -9,6 +9,7 @@ module.exports = {
     .setName('settings')
     .setDescription('Manage bot settings')
     .setDefaultMemberPermissions(PermissionsBitField.Flags.Administrator)
+    // Existing subcommands
     .addSubcommand(subcommand =>
       subcommand
         .setName('set-role')
@@ -32,7 +33,48 @@ module.exports = {
     .addSubcommand(subcommand =>
       subcommand
         .setName('get-roles')
-        .setDescription('Get all role mappings for user levels')),
+        .setDescription('Get all role mappings for user levels'))
+    // New subcommands for Notifications
+    .addSubcommand(subcommand =>
+      subcommand
+        .setName('set-notification-channel')
+        .setDescription('Set the channel for join/leave notifications')
+        .addChannelOption(option =>
+          option.setName('channel')
+            .setDescription('Channel to send notifications in')
+            .setRequired(true)))
+    .addSubcommand(subcommand =>
+      subcommand
+        .setName('toggle-welcome')
+        .setDescription('Enable or disable welcome messages')
+        .addBooleanOption(option =>
+          option.setName('enable')
+            .setDescription('Enable or disable welcome messages')
+            .setRequired(true)))
+    .addSubcommand(subcommand =>
+      subcommand
+        .setName('toggle-leave')
+        .setDescription('Enable or disable leave messages')
+        .addBooleanOption(option =>
+          option.setName('enable')
+            .setDescription('Enable or disable leave messages')
+            .setRequired(true)))
+    .addSubcommand(subcommand =>
+      subcommand
+        .setName('set-welcome-message')
+        .setDescription('Set a custom welcome message')
+        .addStringOption(option =>
+          option.setName('message')
+            .setDescription('The welcome message (use {user} and {memberCount} as placeholders)')
+            .setRequired(true)))
+    .addSubcommand(subcommand =>
+      subcommand
+        .setName('set-leave-message')
+        .setDescription('Set a custom leave message')
+        .addStringOption(option =>
+          option.setName('message')
+            .setDescription('The leave message (use {user} as a placeholder)')
+            .setRequired(true))),
 
   /**
    * Execute the command in response to an interaction.
@@ -92,6 +134,78 @@ module.exports = {
 
       return interaction.reply({
         content: response,
+        ephemeral: true,
+      });
+    }
+
+    // New subcommands for Notifications
+    if (subcommand === 'set-notification-channel') {
+      const channel = interaction.options.getChannel('channel');
+
+      if (!channel.isTextBased()) {
+        return interaction.reply({
+          content: '❌ Please select a text-based channel.',
+          ephemeral: true,
+        });
+      }
+
+      await settingsService.setSetting('notificationChannelId', channel.id);
+      return interaction.reply({
+        content: `✅ Notification channel has been set to ${channel}.`,
+        ephemeral: true,
+      });
+    }
+
+    if (subcommand === 'toggle-welcome') {
+      const enable = interaction.options.getBoolean('enable');
+      await settingsService.setSetting('welcomeEnabled', enable);
+      return interaction.reply({
+        content: `✅ Welcome messages have been ${enable ? 'enabled' : 'disabled'}.`,
+        ephemeral: true,
+      });
+    }
+
+    if (subcommand === 'toggle-leave') {
+      const enable = interaction.options.getBoolean('enable');
+      await settingsService.setSetting('leaveEnabled', enable);
+      return interaction.reply({
+        content: `✅ Leave messages have been ${enable ? 'enabled' : 'disabled'}.`,
+        ephemeral: true,
+      });
+    }
+
+    if (subcommand === 'set-welcome-message') {
+      const message = interaction.options.getString('message');
+
+      // Optional: Validate placeholders
+      if (!message.includes('{user}') || !message.includes('{memberCount}')) {
+        return interaction.reply({
+          content: '❌ The welcome message must include `{user}` and `{memberCount}` placeholders.',
+          ephemeral: true,
+        });
+      }
+
+      await settingsService.setSetting('welcomeMessage', message);
+      return interaction.reply({
+        content: '✅ Welcome message has been updated.',
+        ephemeral: true,
+      });
+    }
+
+    if (subcommand === 'set-leave-message') {
+      const message = interaction.options.getString('message');
+
+      // Optional: Validate placeholders
+      if (!message.includes('{user}')) {
+        return interaction.reply({
+          content: '❌ The leave message must include `{user}` placeholder.',
+          ephemeral: true,
+        });
+      }
+
+      await settingsService.setSetting('leaveMessage', message);
+      return interaction.reply({
+        content: '✅ Leave message has been updated.',
         ephemeral: true,
       });
     }

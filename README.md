@@ -25,7 +25,6 @@ Pedro-Bot/
 ├── buttons/
 │   ├── join.js
 │   ├── leave.js
-│   └── [other-buttons].js
 ├── commands/
 │   ├── admin/
 │   │   ├── schedule.command.js      # New: Schedule Command
@@ -44,12 +43,12 @@ Pedro-Bot/
 │   └── [other-events].js
 ├── models/
 │   ├── Lobby.js
-│   ├── Schedule.js                # New: Schedule Model
+│   ├── Schedule.js
 │   ├── Settings.js
 │   └── UserXP.js
 ├── services/
 │   ├── lobbyService.js
-│   ├── scheduleService.js          # New: Schedule Service
+│   ├── scheduleService.js
 │   ├── settingsService.js
 │   └── userService.js
 ├── utils/
@@ -57,13 +56,10 @@ Pedro-Bot/
 │   ├── database.js
 │   ├── errorHandler.js
 │   ├── matchmakingHelpers.js
-│   ├── scheduler.js                # Updated: Scheduler with scheduling capabilities
+│   ├── scheduler.js
 │   ├── roleManager.js
 │   └── threadManager.js
-├── .env
-├── docker-compose.yml
-├── index.js                        # Updated: Enhanced loading and logging
-└── package.json
+├── index.js 
 
 
 ### Key Points
