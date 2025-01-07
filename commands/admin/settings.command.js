@@ -1,5 +1,5 @@
 // commands/admin/settings.command.js
-const { SlashCommandBuilder, PermissionsBitField } = require('discord.js');
+const { SlashCommandBuilder,MessageFlags, PermissionsBitField } = require('discord.js');
 const settingsService = require('../../services/settingsService');
 const config = require('../../config/constants');
 const errorHandler = require('../../utils/errorHandler');
