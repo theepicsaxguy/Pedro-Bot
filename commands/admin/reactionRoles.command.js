@@ -3,6 +3,7 @@ const { SlashCommandBuilder, PermissionsBitField, ActionRowBuilder, ButtonBuilde
 const ReactionRole = require('../../models/ReactionRole');
 const errorHandler = require('../../utils/errorHandler');
 const ButtonManager = require('../../utils/ButtonManager');
+const { MessageFlags } = require('discord.js');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -26,10 +27,39 @@ module.exports = {
           option.setName('description')
             .setDescription('The description of the embed message')
             .setRequired(true))
+        // Define up to 4 emoji-role pairs
         .addStringOption(option =>
-          option.setName('roles')
-            .setDescription('A comma-separated list of emoji:roleId pairs (e.g., 🖥️:roleId1, 🎮:roleId2)')
-            .setRequired(true)))
+          option.setName('emoji1')
+            .setDescription('Emoji for the first role')
+            .setRequired(true))
+        .addRoleOption(option =>
+          option.setName('role1')
+            .setDescription('Role for the first emoji')
+            .setRequired(true))
+        .addStringOption(option =>
+          option.setName('emoji2')
+            .setDescription('Emoji for the second role')
+            .setRequired(false))
+        .addRoleOption(option =>
+          option.setName('role2')
+            .setDescription('Role for the second emoji')
+            .setRequired(false))
+        .addStringOption(option =>
+          option.setName('emoji3')
+            .setDescription('Emoji for the third role')
+            .setRequired(false))
+        .addRoleOption(option =>
+          option.setName('role3')
+            .setDescription('Role for the third emoji')
+            .setRequired(false))
+        .addStringOption(option =>
+          option.setName('emoji4')
+            .setDescription('Emoji for the fourth role')
+            .setRequired(false))
+        .addRoleOption(option =>
+          option.setName('role4')
+            .setDescription('Role for the fourth emoji')
+            .setRequired(false)))
     .addSubcommand(subcommand =>
       subcommand
         .setName('delete')
@@ -38,7 +68,7 @@ module.exports = {
           option.setName('message-id')
             .setDescription('The message ID of the reaction role message to delete')
             .setRequired(true))),
-
+  
   /**
    * Execute the command in response to an interaction.
    * @param {Interaction} interaction - The Discord interaction.
@@ -50,38 +80,32 @@ module.exports = {
       const channel = interaction.options.getChannel('channel');
       const title = interaction.options.getString('title');
       const description = interaction.options.getString('description');
-      const rolesInput = interaction.options.getString('roles');
 
-      if (!channel.isTextBased()) {
-        return interaction.reply({
-          content: '❌ Please select a text-based channel.',
-          ephemeral: true,
-        });
+      // Collect up to 4 emoji-role pairs
+      const roles = [];
+      for (let i = 1; i <= 4; i++) {
+        const emoji = interaction.options.getString(`emoji${i}`);
+        const role = interaction.options.getRole(`role${i}`);
+        if (emoji && role) {
+          // Validate emoji
+          if (!emoji.match(/^<a?:\w+:\d+>$/) && !emoji.match(/^[\u{1F600}-\u{1F64F}]/u)) {
+            // Simple emoji validation: either a custom emoji or a standard emoji
+            // You can enhance this regex based on your requirements
+            return interaction.reply({
+              content: `❌ Invalid emoji format for emoji${i}. Please provide a valid emoji.`,
+              flags: MessageFlags.Ephemeral,
+            });
+          }
+
+          roles.push({ emoji, roleId: role.id });
+        }
       }
 
-      // Parse rolesInput
-      const rolesArray = rolesInput.split(',').map(item => item.trim());
-      const roles = [];
-
-      for (const item of rolesArray) {
-        const [emoji, roleId] = item.split(':').map(part => part.trim());
-        if (!emoji || !roleId) {
-          return interaction.reply({
-            content: `❌ Invalid format for roles. Each role should be in the format emoji:roleId. Problematic entry: "${item}"`,
-            ephemeral: true,
-          });
-        }
-
-        // Validate role existence
-        const role = interaction.guild.roles.cache.get(roleId);
-        if (!role) {
-          return interaction.reply({
-            content: `❌ Role ID "${roleId}" does not exist.`,
-            ephemeral: true,
-          });
-        }
-
-        roles.push({ emoji, roleId });
+      if (roles.length === 0) {
+        return interaction.reply({
+          content: '❌ You must provide at least one emoji-role pair.',
+          flags: MessageFlags.Ephemeral,
+        });
       }
 
       // Create Embed
@@ -120,7 +144,7 @@ module.exports = {
 
         await interaction.reply({
           content: '✅ Reaction role message has been created successfully.',
-          ephemeral: true,
+          flags: MessageFlags.Ephemeral,
         });
 
         console.log(`[✅] Created reaction role message with ID: ${message.id}`);
@@ -128,7 +152,7 @@ module.exports = {
         errorHandler(error, 'ReactionRoles Command - create');
         await interaction.reply({
           content: '❌ There was an error creating the reaction role message.',
-          ephemeral: true,
+          flags: MessageFlags.Ephemeral,
         });
       }
     }
@@ -141,7 +165,7 @@ module.exports = {
         if (!reactionRole) {
           return interaction.reply({
             content: `🔴 No reaction role message found with ID "${messageId}".`,
-            ephemeral: true,
+            flags: MessageFlags.Ephemeral,
           });
         }
 
@@ -161,7 +185,7 @@ module.exports = {
 
         await interaction.reply({
           content: `✅ Reaction role message with ID "${messageId}" has been deleted.`,
-          ephemeral: true,
+          flags: MessageFlags.Ephemeral,
         });
 
         console.log(`[✅] Deleted reaction role message with ID: ${messageId}`);
@@ -169,9 +193,17 @@ module.exports = {
         errorHandler(error, 'ReactionRoles Command - delete');
         await interaction.reply({
           content: '❌ There was an error deleting the reaction role message.',
-          ephemeral: true,
+          flags: MessageFlags.Ephemeral,
         });
       }
     }
+  },
+
+  /**
+   * Execute the command programmatically without an interaction.
+   * @param {Object} args - Arguments for the command.
+   */
+  async executeScheduled(args) {
+    // Implement scheduled execution logic here if needed
   },
 };

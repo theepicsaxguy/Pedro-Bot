@@ -58,7 +58,7 @@ module.exports = {
             } catch (err) {
                 return interaction.reply({
                     content: '❌ Invalid JSON format for arguments.',
-                    ephemeral: true,
+                    flags: MessageFlags.Ephemeral,
                 });
             }
 
@@ -68,13 +68,13 @@ module.exports = {
                 scheduler.scheduleCommand(schedule);
                 await interaction.reply({
                     content: `✅ Schedule "${name}" has been created and scheduled.`,
-                    ephemeral: true,
+                    flags: MessageFlags.Ephemeral,
                 });
             } catch (error) {
                 errorHandler(error, 'Schedule Command - create');
                 await interaction.reply({
                     content: `❌ Error creating schedule: ${error.message}`,
-                    ephemeral: true,
+                    flags: MessageFlags.Ephemeral,
                 });
             }
         }
@@ -85,7 +85,7 @@ module.exports = {
                 if (schedules.length === 0) {
                     return interaction.reply({
                         content: '📋 No schedules have been created.',
-                        ephemeral: true,
+                        flags: MessageFlags.Ephemeral,
                     });
                 }
 
@@ -99,13 +99,13 @@ module.exports = {
 
                 return interaction.reply({
                     content: response,
-                    ephemeral: true,
+                    flags: MessageFlags.Ephemeral,
                 });
             } catch (error) {
                 errorHandler(error, 'Schedule Command - list');
                 await interaction.reply({
                     content: '❌ There was an error fetching the schedules.',
-                    ephemeral: true,
+                    flags: MessageFlags.Ephemeral,
                 });
             }
         }
@@ -118,7 +118,7 @@ module.exports = {
                 if (!schedule) {
                     return interaction.reply({
                         content: `🔴 No schedule found with the name "${name}".`,
-                        ephemeral: true,
+                        flags: MessageFlags.Ephemeral,
                     });
                 }
 
@@ -128,13 +128,13 @@ module.exports = {
                 await scheduleService.deleteSchedule(name);
                 await interaction.reply({
                     content: `✅ Schedule "${name}" has been deleted and unscheduled.`,
-                    ephemeral: true,
+                    flags: MessageFlags.Ephemeral,
                 });
             } catch (error) {
                 errorHandler(error, 'Schedule Command - delete');
                 await interaction.reply({
                     content: `❌ Error deleting schedule: ${error.message}`,
-                    ephemeral: true,
+                    flags: MessageFlags.Ephemeral,
                 });
             }
         }

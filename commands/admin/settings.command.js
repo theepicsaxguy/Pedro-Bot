@@ -90,14 +90,14 @@ module.exports = {
       if (level < 1) {
         return interaction.reply({
           content: '❌ Level must be at least 1.',
-          ephemeral: true,
+          flags: MessageFlags.Ephemeral,
         });
       }
 
       await settingsService.setRoleForLevel(level, role.id);
       return interaction.reply({
         content: `✅ Role <@&${role.id}> has been set for Level ${level}.`,
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     }
 
@@ -107,14 +107,14 @@ module.exports = {
       if (level < 1) {
         return interaction.reply({
           content: '❌ Level must be at least 1.',
-          ephemeral: true,
+          flags: MessageFlags.Ephemeral,
         });
       }
 
       await settingsService.setRoleForLevel(level, null);
       return interaction.reply({
         content: `✅ Role for Level ${level} has been removed.`,
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     }
 
@@ -123,7 +123,7 @@ module.exports = {
       if (Object.keys(roleMap).length === 0) {
         return interaction.reply({
           content: '📋 No role mappings have been set.',
-          ephemeral: true,
+          flags: MessageFlags.Ephemeral,
         });
       }
 
@@ -134,7 +134,7 @@ module.exports = {
 
       return interaction.reply({
         content: response,
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     }
 
@@ -145,14 +145,14 @@ module.exports = {
       if (!channel.isTextBased()) {
         return interaction.reply({
           content: '❌ Please select a text-based channel.',
-          ephemeral: true,
+          flags: MessageFlags.Ephemeral,
         });
       }
 
       await settingsService.setSetting('notificationChannelId', channel.id);
       return interaction.reply({
         content: `✅ Notification channel has been set to ${channel}.`,
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     }
 
@@ -161,7 +161,7 @@ module.exports = {
       await settingsService.setSetting('welcomeEnabled', enable);
       return interaction.reply({
         content: `✅ Welcome messages have been ${enable ? 'enabled' : 'disabled'}.`,
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     }
 
@@ -170,7 +170,7 @@ module.exports = {
       await settingsService.setSetting('leaveEnabled', enable);
       return interaction.reply({
         content: `✅ Leave messages have been ${enable ? 'enabled' : 'disabled'}.`,
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     }
 
@@ -181,14 +181,14 @@ module.exports = {
       if (!message.includes('{user}') || !message.includes('{memberCount}')) {
         return interaction.reply({
           content: '❌ The welcome message must include `{user}` and `{memberCount}` placeholders.',
-          ephemeral: true,
+          flags: MessageFlags.Ephemeral,
         });
       }
 
       await settingsService.setSetting('welcomeMessage', message);
       return interaction.reply({
         content: '✅ Welcome message has been updated.',
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     }
 
@@ -199,14 +199,14 @@ module.exports = {
       if (!message.includes('{user}')) {
         return interaction.reply({
           content: '❌ The leave message must include `{user}` placeholder.',
-          ephemeral: true,
+          flags: MessageFlags.Ephemeral,
         });
       }
 
       await settingsService.setSetting('leaveMessage', message);
       return interaction.reply({
         content: '✅ Leave message has been updated.',
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     }
   },

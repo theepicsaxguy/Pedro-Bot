@@ -67,7 +67,8 @@ module.exports = {
  * @param {Client} client - The Discord client instance.
  */
 async function handleReactionRoleButton(interaction, client) {
-  const { guildId, messageId, customId, user } = interaction;
+  const { guildId, message, customId, user } = interaction;
+  const messageId = message.id;
 
   // Fetch the ReactionRole configuration
   const reactionRole = await ReactionRole.findOne({ guildId, messageId }).exec();
@@ -75,7 +76,7 @@ async function handleReactionRoleButton(interaction, client) {
     console.warn(`[⚠️] No ReactionRole configuration found for message ID: ${messageId}`);
     return interaction.reply({
       content: '❌ Reaction role configuration not found.',
-      ephemeral: true,
+      flags: MessageFlags.Ephemeral,
     });
   }
 
@@ -84,7 +85,7 @@ async function handleReactionRoleButton(interaction, client) {
   if (parts.length < 2) {
     return interaction.reply({
       content: '❌ Invalid reaction role button.',
-      ephemeral: true,
+      flags: MessageFlags.Ephemeral,
     });
   }
 
@@ -92,7 +93,7 @@ async function handleReactionRoleButton(interaction, client) {
   if (isNaN(index) || index < 0 || index >= reactionRole.roles.length) {
     return interaction.reply({
       content: '❌ Invalid reaction role button.',
-      ephemeral: true,
+      flags: MessageFlags.Ephemeral,
     });
   }
 
@@ -101,7 +102,7 @@ async function handleReactionRoleButton(interaction, client) {
   if (!role) {
     return interaction.reply({
       content: `❌ The role associated with this button no longer exists.`,
-      ephemeral: true,
+      flags: MessageFlags.Ephemeral,
     });
   }
 
@@ -112,7 +113,7 @@ async function handleReactionRoleButton(interaction, client) {
     await member.roles.remove(role);
     await interaction.reply({
       content: `✅ The role <@&${role.id}> has been removed from you.`,
-      ephemeral: true,
+      flags: MessageFlags.Ephemeral,
     });
     console.log(`[✅] Removed role <@&${role.id}> from user ${user.tag}`);
   } else {
@@ -120,7 +121,7 @@ async function handleReactionRoleButton(interaction, client) {
     await member.roles.add(role);
     await interaction.reply({
       content: `✅ The role <@&${role.id}> has been added to you.`,
-      ephemeral: true,
+      flags: MessageFlags.Ephemeral,
     });
     console.log(`[✅] Added role <@&${role.id}> to user ${user.tag}`);
   }
