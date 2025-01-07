@@ -115,11 +115,17 @@ const registerCommands = async () => {
 };
 registerCommands();
 
+
+
 // Login the Bot
 client.login(process.env.DISCORD_TOKEN)
   .then(() => {
     console.log('[✅] Bot login successful.');
+
+    // Set bot activity to "Playing MATAC"
+    client.user.setActivity('MATAC', { type: 'PLAYING' });
   })
   .catch(err => {
     errorHandler(err, 'Bot Login');
   });
+
