@@ -69,12 +69,27 @@ module.exports = {
             .setRequired(true)))
     .addSubcommand(subcommand =>
       subcommand
+        .setName('set-matchmaking-role')
+        .setDescription('Set the Discord role to mention in matchmaking embeds')
+        .addRoleOption(option =>
+          option.setName('role')
+            .setDescription('The Discord role to assign to matchmaking notifications')
+            .setRequired(true)))
+    .addSubcommand(subcommand =>
+      subcommand
+        .setName('get-matchmaking-role')
+        .setDescription('Get the currently set matchmaking role'))
+    .addSubcommand(subcommand =>
+      subcommand
         .setName('set-leave-message')
         .setDescription('Set a custom leave message')
         .addStringOption(option =>
           option.setName('message')
             .setDescription('The leave message (use {user} as a placeholder)')
             .setRequired(true))),
+
+    
+
 
   /**
    * Execute the command in response to an interaction.
@@ -242,6 +257,32 @@ module.exports = {
         await settingsService.setRoleForLevel(level, null);
         console.log(`Scheduled Execution: Role for Level ${level} has been removed.`);
       }
+      if (subcommand === 'set-matchmaking-role') {
+        const role = interaction.options.getRole('role');
+      
+        await settingsService.setSetting('matchmakingRoleId', role.id);
+        return interaction.reply({
+          content: `✅ The matchmaking role has been set to ${role}.`,
+          flags: MessageFlags.Ephemeral,
+        });
+      }
+
+      if (subcommand === 'get-matchmaking-role') {
+        const roleId = await settingsService.getSetting('matchmakingRoleId');
+        if (roleId) {
+          const role = interaction.guild.roles.cache.get(roleId);
+          return interaction.reply({
+            content: `📋 The current matchmaking role is ${role ? role : 'not found'}.`,
+            flags: MessageFlags.Ephemeral,
+          });
+        } else {
+          return interaction.reply({
+            content: '📋 No matchmaking role has been set yet.',
+            flags: MessageFlags.Ephemeral,
+          });
+        }
+      }
+
 
       if (subcommand === 'get-roles') {
         const roleMap = await settingsService.getAllRoleMappings();
