@@ -126,7 +126,7 @@ module.exports = {
 
       // Retrieve matchmaking role from settings
       const matchmakingRoleId = await require('../../services/settingsService').getSetting('matchmakingRoleId');
-      const roleMention = matchmakingRoleId ? `<@&${matchmakingRoleId}>` : '@Matchmaking';
+      const roleMention = matchmakingRoleId ? `<@&${1324150202470371358}>` : '@Matchmaking';
 
       // Send the matchmaking message
       const message = await matchmakingChannel.send({
