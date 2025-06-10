@@ -20,7 +20,7 @@ module.exports = {
           { name: 'In 30 Minutes', value: '30_min'  },
           { name: 'In 1 Hour',     value: '1_hour'  },
           { name: 'In 2 Hours',    value: '2_hours' },
-          { name: 'In 4 Hours',    value: '2_hours' }
+          { name: 'In 4 Hours',    value: '4_hours' }
         )
     )
     .addStringOption(option =>
