@@ -48,7 +48,7 @@ jobs:
           MATCHMAKING_CHANNEL: "matchmaking"
           NODE_ENV: "test"
       - name: Upload coverage reports
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         if: success()
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
