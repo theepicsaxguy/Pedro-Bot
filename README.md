@@ -88,11 +88,12 @@ Pedro-Bot/
 ## Matchmaking Feature
 
 1. **Slash Command**: `/matchmaking` (in `commands/matchmaking.js`):
-   - Prompts the user for time selection, game code, description, etc.
+   - Prompts the user for time, game code, optional template, slot count, and description.
    - Creates a new message in the configured matchmaking channel (default `#matchmaking`) with an embed and two buttons (JOIN, LEAVE).
    - Creates a new thread under that message for discussion.
    - Stores the lobby data in MongoDB (`Lobby` model).
    - Schedules a start time with `scheduler.scheduleLobbyStart` to mark the lobby as started and update the embed.
+   - Also schedules automatic cleanup six hours after the start time, archiving the lobby into `LobbyHistory`.
    - The role mentioned in the embed is configured with `/settings set-matchmaking-role` and stored in MongoDB.
 
 2. **Join/Leave Logic**:
@@ -100,8 +101,13 @@ Pedro-Bot/
    - If the button ID is “join” or “leave,” it updates the corresponding lobby’s data (stored in Mongo), and edits the embed to reflect the updated users.
 
 3. **Embed Updates**:
-   - `helpers.js` within matchmaking builds or rebuilds the embed (`buildLobbyEmbed`), adding a small footer `(MATAC) The Mature Tactical Circkle`.
-   - `updateLobbyEmbed` re-edits the original message.
+ - `helpers.js` within matchmaking builds or rebuilds the embed (`buildLobbyEmbed`), adding a small footer `(MATAC) The Mature Tactical Circkle`.
+  - `updateLobbyEmbed` re-edits the original message.
+  - Full lobbies prevent additional joins based on the configured slot count.
+
+4. **History & Recurring Lobbies**:
+   - Finished lobbies are archived automatically and can be counted with `historyService.getLobbyStats()`.
+   - Use `/schedule` to create recurring lobbies by scheduling the `/matchmaking` command.
 
 By keeping all “matchmaking” references in `commands/matchmaking/` and using the `MATCHMAKING_CHANNEL` environment variable for the channel name, we avoid scattering that code throughout the project.
 | `HEALTH_PORT` | Port for the health endpoint (default `3000`)

@@ -97,6 +97,37 @@ class Scheduler {
     }
   }
 
+  scheduleLobbyCleanup(id, time) {
+    try {
+      const job = schedule.scheduleJob(time, async () => {
+        try {
+          const data = await lobbyService.getLobby(id);
+          if (!data) return;
+          await require('../services/historyService').recordLobby({
+            lobbyId: id,
+            gameCode: data.gameCode,
+            creator: data.creator,
+            tags: data.tags,
+            joinedUsers: data.joinedUsers,
+            totalSlots: data.totalSlots,
+            description: data.description,
+            matchTime: data.matchTime,
+            endedAt: new Date(),
+          });
+          await lobbyService.deleteLobby(id);
+          console.log(`[✅] Lobby ${id} cleaned up.`);
+        } catch (err) {
+          errorHandler(err, `Scheduler - lobby cleanup job "${id}"`);
+        }
+      });
+
+      this.lobbyJobs.set(`cleanup_${id}`, job);
+      console.log(`[✅] Scheduled lobby cleanup for ID "${id}".`);
+    } catch (error) {
+      errorHandler(error, `Scheduler - scheduleLobbyCleanup "${id}"`);
+    }
+  }
+
   /**
    * Execute a scheduled command.
    * @param {String} commandName - The name of the command to execute.

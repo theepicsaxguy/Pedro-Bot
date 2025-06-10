@@ -35,6 +35,15 @@ module.exports = {
         return;
       }
 
+      if (lobbyData.joinedUsers.length >= lobbyData.totalSlots) {
+        await interaction.reply({
+          content: '🔴 This lobby is full.',
+          flags: MessageFlags.Ephemeral,
+          allowedMentions: { parse: ['roles'] },
+        });
+        return;
+      }
+
       // Add user to lobby
       lobbyData.joinedUsers.push(username);
       lobbyData.joinedUserIds.push(userId);

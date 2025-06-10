@@ -6,6 +6,7 @@ const scheduler = require('../../utils/scheduler');
 const threadManager = require('../../utils/threadManager');
 const { buildLobbyEmbed } = require('../../utils/matchmakingHelpers');
 const errorHandler = require('../../utils/errorHandler');
+const { GAME_TEMPLATES } = require('../../config/constants');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -40,9 +41,24 @@ module.exports = {
         .setRequired(true)
     )
     .addStringOption(option =>
+      option.setName('game')
+        .setDescription('Choose a game template')
+        .setRequired(false)
+        .addChoices(
+          { name: 'Arma 3', value: 'arma3' },
+          { name: 'Squad', value: 'squad' },
+        )
+    )
+    .addIntegerOption(option =>
+      option.setName('slots')
+        .setDescription('Number of player slots')
+        .setMinValue(2)
+        .setMaxValue(32)
+    )
+    .addStringOption(option =>
       option.setName('description')
         .setDescription('Provide a description for the match')
-        .setRequired(true)
+        .setRequired(false)
     ),
 
   async execute(interaction) {
@@ -54,6 +70,8 @@ module.exports = {
       const tagsInput = interaction.options.getString('tags');
       const tags = tagsInput.split(',').map(tag => tag.trim()).join(', ');
       const gameCode = interaction.options.getString('game_code');
+      const gameTemplate = interaction.options.getString('game');
+      const slotsInput = interaction.options.getInteger('slots');
       const description = interaction.options.getString('description');
       const creator = interaction.user.id;
       const username = interaction.user.username;
@@ -67,12 +85,20 @@ module.exports = {
         return;
       }
 
-      if (description.length > 200) {
+      if (description && description.length > 200) {
         await interaction.editReply({
           content: '❌ Description is too long. Please limit to 200 characters.',
           flags: MessageFlags.Ephemeral
         });
         return;
+      }
+
+      let totalSlots = slotsInput || 6;
+      let lobbyDescription = description || '';
+      if (gameTemplate && GAME_TEMPLATES[gameTemplate]) {
+        const tpl = GAME_TEMPLATES[gameTemplate];
+        if (!slotsInput) totalSlots = tpl.slots;
+        if (!description) lobbyDescription = tpl.description;
       }
 
       // Determine the match time
@@ -101,8 +127,8 @@ module.exports = {
         tags,
         joinedUsers: [username],
         joinedUserIds: [creator],
-        totalSlots: 6,
-        description,
+        totalSlots,
+        description: lobbyDescription,
         started: false,
         matchTime,
       };
@@ -149,6 +175,8 @@ module.exports = {
 
       // Schedule the lobby start
       scheduler.scheduleLobbyStart(message.id, matchTime, message);
+      const cleanupTime = new Date(matchTime.getTime() + 6 * 60 * 60 * 1000);
+      scheduler.scheduleLobbyCleanup(message.id, cleanupTime);
 
       await interaction.editReply({
         content: '✅ Your matchmaking lobby has been created in #matchmaking!',
