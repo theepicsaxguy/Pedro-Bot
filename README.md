@@ -109,16 +109,22 @@ By keeping all “matchmaking” references in `commands/matchmaking/` and using
 ## Leveling Feature
 
 1. **Mongo Model**: `UserXP.js` stores each user’s `_id` (Discord ID), their `xp` total, current `level`, etc.
-2. **XP Awarding**:  
-   - In `index.js`, we added a `messageCreate` event. Every new message from a user awards a small XP (e.g., 5).
+2. **XP Awarding**:
+   - In `index.js`, the `messageCreate` event grants XP. Each activity can use a multiplier defined in `config/constants.js`.
    - The logic of awarding XP is in `commands/levels/levelsManager.js` → `incrementXP()`.
-   - We store and fetch the user doc from Mongo, add XP, check if that user’s new total crosses the threshold for a new level, and if so, we assign a role and post a “level up” announcement in the channel.
+   - We store and fetch the user doc from Mongo, apply any XP decay, add XP, check for a new level, and if so, assign a role and post a “level up” message.
 3. **Level/XP Formula**:  
 4. **Role Assignment**:
    - Roles for each level are stored in MongoDB using the `/settings set-role` command.
    - When a user levels up, the bot checks if a role is configured for that level and assigns it.
-5. **`/level` Command** (optional, in `level.js`):  
+5. **`/level` Command** (optional, in `level.js`):
    - A user can check their current XP, level, and how much XP remains until the next level.
+6. **`/leaderboard` Command**:
+   - Shows the top users with pagination (`/leaderboard page:2`).
+7. **`/challenge` Command**:
+   - Lets users claim a daily or weekly XP bonus.
+8. **XP Decay**:
+   - After seven days of inactivity, XP slowly decays when the user returns.
 
 This system is minimal, but it can be expanded easily with leaderboards, cooldowns, or advanced spam checks.
 

@@ -7,7 +7,13 @@ module.exports = {
   async execute(message, client) {
     try {
       if (!message.guild || message.author.bot) return;
-      await levelsManager.incrementXP(message, 5);
+      await levelsManager.incrementXP(
+        message.author.id,
+        message.guild,
+        message.channel,
+        5,
+        'MESSAGE'
+      );
     } catch (error) {
       errorHandler(error, 'MessageCreate Event - execute');
     }

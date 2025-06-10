@@ -49,4 +49,36 @@ module.exports = {
       throw error;
     }
   },
+
+  /**
+   * Get top users ordered by XP.
+   * @param {Number} limit - Number of users to return.
+   * @param {Number} skip - How many users to skip.
+   * @returns {Promise<Array>}
+   */
+  async getTopUsers(limit, skip) {
+    try {
+      return await UserXP.find({})
+        .sort({ xp: -1 })
+        .skip(skip)
+        .limit(limit)
+        .exec();
+    } catch (error) {
+      errorHandler(error, 'User Service - getTopUsers');
+      return [];
+    }
+  },
+
+  /**
+   * Count all users with XP records.
+   * @returns {Promise<Number>}
+   */
+  async getUserCount() {
+    try {
+      return await UserXP.countDocuments().exec();
+    } catch (error) {
+      errorHandler(error, 'User Service - getUserCount');
+      return 0;
+    }
+  },
 };

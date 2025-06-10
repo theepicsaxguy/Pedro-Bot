@@ -7,6 +7,8 @@ const userXPSchema = new mongoose.Schema({
   level: { type: Number, default: 0 },
   lastMessage: { type: Date, default: null },
   excludedChannels: { type: [String], default: [] },
+  lastDaily: { type: Date, default: null },
+  lastWeekly: { type: Date, default: null },
 }, {
   versionKey: false,
 });

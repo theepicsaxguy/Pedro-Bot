@@ -3,73 +3,70 @@ const userService = require('../../services/userService');
 const levelUtils = require('../../utils/levelUtils');
 const roleManager = require('../../utils/roleManager');
 const settingsService = require('../../services/settingsService');
+const config = require('../../config/constants');
 const { MessageFlags } = require('discord.js');
 const errorHandler = require('../../utils/errorHandler');
 
 /**
- * Award XP for a message, check if user levels up, assign any matching role.
- * @param {Message} message - The Discord message object.
- * @param {Number} xpToAdd - The amount of XP to add.
+ * Update a user's XP and handle level changes.
+ * @param {String} userId - Discord user ID.
+ * @param {Guild} guild - Discord guild.
+ * @param {Channel} channel - Channel to send level up messages.
+ * @param {Number} baseXP - Base XP before multipliers.
+ * @param {String} activity - Activity key for multipliers.
  */
-async function incrementXP(message, xpToAdd) {
+async function incrementXP(userId, guild, channel, baseXP, activity = 'MESSAGE') {
   try {
-    // Skip bot messages
-    if (message.author.bot) return;
-
-    // Fetch user document
-    let userDoc = await userService.getUser(message.author.id);
+    let userDoc = await userService.getUser(userId);
     if (!userDoc) {
-      userDoc = await userService.setUser(message.author.id, {
+      userDoc = await userService.setUser(userId, {
         xp: 0,
         level: 0,
-        lastMessage: new Date(),
+        lastMessage: null,
         excludedChannels: [],
+        lastDaily: null,
+        lastWeekly: null,
       });
     }
 
-    // Check if the channel is excluded
-    if (!cachedExcludedChannels) {
-      await refreshExcludedChannelsCache();
-    }
-    if (cachedExcludedChannels.includes(message.channel.id)) return;
+    const excluded = await settingsService.getSetting('excludedChannels') || [];
+    if (channel && excluded.includes(channel.id)) return;
 
-    // Cooldown check: skip if last message was less than 15 seconds ago
-    if (userDoc.lastMessage && (Date.now() - userDoc.lastMessage.getTime()) < 15000) {
-      return;
+    // XP decay after seven days of inactivity
+    if (userDoc.lastMessage) {
+      const days = Math.floor((Date.now() - userDoc.lastMessage.getTime()) / 86400000);
+      if (days > 7) {
+        const decay = Math.floor(userDoc.xp * 0.01 * (days - 7));
+        userDoc.xp = Math.max(0, userDoc.xp - decay);
+      }
     }
 
-    // Update XP
-    userDoc.xp += xpToAdd;
+    const multiplier = config.XP_MULTIPLIERS[activity] || 1;
+    const totalXP = Math.ceil(baseXP * multiplier);
+    userDoc.xp += totalXP;
     userDoc.lastMessage = new Date();
 
-    // Calculate new level
     const oldLevel = userDoc.level;
     const newLevel = levelUtils.calculateLevelFromXP(userDoc.xp);
+    userDoc.level = newLevel;
+    await userService.setUser(userId, userDoc);
 
     if (newLevel > oldLevel) {
-      userDoc.level = newLevel;
-      await userService.setUser(message.author.id, userDoc);
-
-      // Assign role based on new level
-      const member = await message.guild.members.fetch(message.author.id);
-      if (member) {
-        await roleManager.assignRole(member, newLevel);
+      const member = await guild.members.fetch(userId);
+      if (member) await roleManager.assignRole(member, newLevel);
+      if (channel) {
+        await channel.send({
+          content: `<@${userId}> just advanced to **Level ${newLevel}**! Congrats!`,
+          flags: MessageFlags.SuppressEmbeds,
+        });
       }
-
-      // Notify user about level up
-      await message.channel.send({
-        content: `<@${message.author.id}> just advanced to **Level ${newLevel}**! Congrats!`,
-        flags: MessageFlags.SuppressEmbeds,
-      });
-    } else {
-      // Save user document without level change
-      await userService.setUser(message.author.id, userDoc);
+    } else if (newLevel < oldLevel) {
+      const member = await guild.members.fetch(userId);
+      if (member) await roleManager.removeRole(member, oldLevel);
     }
   } catch (error) {
     errorHandler(error, 'Levels Manager - incrementXP');
   }
 }
 
-module.exports = {
-  incrementXP,
-};
+module.exports = { incrementXP };
