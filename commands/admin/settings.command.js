@@ -258,28 +258,18 @@ module.exports = {
         console.log(`Scheduled Execution: Role for Level ${level} has been removed.`);
       }
       if (subcommand === 'set-matchmaking-role') {
-        const role = interaction.options.getRole('role');
-      
-        await settingsService.setSetting('matchmakingRoleId', role.id);
-        return interaction.reply({
-          content: `✅ The matchmaking role has been set to ${role}.`,
-          flags: MessageFlags.Ephemeral,
-        });
+        if (!roleId) throw new Error('Missing "roleId" argument.');
+
+        await settingsService.setSetting('matchmakingRoleId', roleId);
+        console.log(`Scheduled Execution: The matchmaking role has been set to <@&${roleId}>.`);
       }
 
       if (subcommand === 'get-matchmaking-role') {
-        const roleId = await settingsService.getSetting('matchmakingRoleId');
-        if (roleId) {
-          const role = interaction.guild.roles.cache.get(roleId);
-          return interaction.reply({
-            content: `📋 The current matchmaking role is ${role ? role : 'not found'}.`,
-            flags: MessageFlags.Ephemeral,
-          });
+        const currentRoleId = await settingsService.getSetting('matchmakingRoleId');
+        if (currentRoleId) {
+          console.log(`Scheduled Execution: The current matchmaking role is <@&${currentRoleId}>.`);
         } else {
-          return interaction.reply({
-            content: '📋 No matchmaking role has been set yet.',
-            flags: MessageFlags.Ephemeral,
-          });
+          console.log('Scheduled Execution: No matchmaking role has been set yet.');
         }
       }
 
