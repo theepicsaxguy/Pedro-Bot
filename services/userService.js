@@ -84,10 +84,32 @@ module.exports = {
 
   async getUserRank(id) {
     try {
-      const user = await UserXP.findById(id).exec();
-      if (!user) return 0;
-      const better = await UserXP.countDocuments({ xp: { $gt: user.xp } }).exec();
-      return better + 1;
+      const result = await UserXP.aggregate([
+        { $match: { _id: id } },
+        {
+          $lookup: {
+            from: "userxps",
+            let: { userXP: "$xp" },
+            pipeline: [
+              { $match: { $expr: { $gt: ["$xp", "$$userXP"] } } },
+              { $count: "betterCount" }
+            ],
+            as: "betterUsers"
+          }
+        },
+        {
+          $addFields: {
+            rank: {
+              $add: [
+                { $arrayElemAt: ["$betterUsers.betterCount", 0] },
+                1
+              ]
+            }
+          }
+        },
+        { $project: { rank: 1 } }
+      ]).exec();
+      return result.length > 0 ? result[0].rank : 0;
     } catch (error) {
       errorHandler(error, 'User Service - getUserRank');
       return 0;
