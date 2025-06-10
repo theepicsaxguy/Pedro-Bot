@@ -98,7 +98,7 @@ Pedro-Bot/
    - If the button ID is “join” or “leave,” it updates the corresponding lobby’s data (stored in Mongo), and edits the embed to reflect the updated users.
 
 3. **Embed Updates**:
-   - `matchmakingHelpers.js` within `utils/` builds or rebuilds the embed (`buildLobbyEmbed`), adding a small footer `(MATAC) The Mature Tactical Circkle`.
+   - `matchmakingHelpers.js` within `utils/` builds or rebuilds the embed (`buildLobbyEmbed`), adding a small footer `(MATAC) The Mature Tactical Circle`.
    - `updateLobbyEmbed` re-edits the original message.
 
 By keeping all “matchmaking” references (like channel name `#matchmaking`) and game-lobby logic in `commands/matchmaking/`, we avoid scattering that code throughout the project.
