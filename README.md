@@ -142,13 +142,14 @@ Note: Role mappings and the matchmaking mention role are configured with the `/s
 
 ## How to Run via Docker Compose
 
-1. **Clone** this repo or reference it in your Dockerfile build.  
+1. **Clone** this repo.
 2. **Configure** your `.env` or environment variables (token, guild ID, Mongo URI, etc.).  
-3. **Ensure** your `docker-compose.yml` references:
+3. **Ensure** your `docker-compose.yml` builds from the current directory:
    ```yaml
    services:
      pedro-bot:
-       build: https://github.com/theepicsaxguy/Pedro-Bot.git#main
+       build:
+         context: .
        environment:
          - DISCORD_TOKEN=...
          - CLIENT_ID=...
@@ -163,10 +164,10 @@ Note: Role mappings and the matchmaking mention role are configured with the `/s
    volumes:
      mongo_data:
 
-4. Run docker compose build && docker compose up -d (or docker compose up --build -d).
+4. The repository includes a `.dockerignore` so your build context stays small.
+5. Run `docker compose build` && `docker compose up -d` (or `docker compose up --build -d`).
 
-
-5. Your bot will connect to Discord, connect to Mongo, register slash commands, and start listening for messages.
+6. Your bot will connect to Discord, connect to Mongo, register slash commands, and start listening for messages.
 
 
 

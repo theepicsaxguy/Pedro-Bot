@@ -1,7 +1,8 @@
 services:
   pedro-bot:
     container_name: pedro-bot
-    build: https://github.com/theepicsaxguy/Pedro-Bot.git#main
+    build:
+      context: .
     volumes:
       - type: bind
         source: /var/log/pedro-bot
