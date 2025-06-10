@@ -88,7 +88,7 @@ Pedro-Bot/
 
 1. **Slash Command**: `/matchmaking` (in `commands/matchmaking.js`):
    - Prompts the user for time selection, game code, description, etc.
-   - Creates a new message in the `#matchmaking` channel with an embed and two buttons (JOIN, LEAVE).
+   - Creates a new message in the configured matchmaking channel (default `#matchmaking`) with an embed and two buttons (JOIN, LEAVE).
    - Creates a new thread under that message for discussion.
    - Stores the lobby data in MongoDB (`Lobby` model).
    - Schedules a start time with `scheduler.scheduleLobbyStart` to mark the lobby as started and update the embed.
@@ -102,7 +102,7 @@ Pedro-Bot/
    - `helpers.js` within matchmaking builds or rebuilds the embed (`buildLobbyEmbed`), adding a small footer `(MATAC) The Mature Tactical Circkle`.
    - `updateLobbyEmbed` re-edits the original message.
 
-By keeping all “matchmaking” references (like channel name `#matchmaking`) and game-lobby logic in `commands/matchmaking/`, we avoid scattering that code throughout the project.
+By keeping all “matchmaking” references in `commands/matchmaking/` and using the `MATCHMAKING_CHANNEL` environment variable for the channel name, we avoid scattering that code throughout the project.
 
 ---
 
@@ -132,8 +132,9 @@ This system is minimal, but it can be expanded easily with leaderboards, cooldow
 | `CLIENT_ID`       | Your bot’s application client ID                                              |
 | `GUILD_ID`        | The server (guild) ID where you want to register commands                     |
 | `MONGO_URI`       | MongoDB connection string (e.g., `mongodb://mongodb:27017/pedro-bot`)         |
+| `MATCHMAKING_CHANNEL` | Name of the channel used for matchmaking lobbies (default `matchmaking`) |
 
-Note: Role mappings and the matchmaking mention role are configured with the `/settings` command and stored in MongoDB.
+Note: Role mappings and the matchmaking mention role are configured with the `/settings` command and stored in MongoDB. The matchmaking channel is defined with the `MATCHMAKING_CHANNEL` environment variable.
 **Usage**:  
 - In Docker Compose, set these as environment variables under `pedro-bot`.  
 - See `docker-compose.yml` for an example.

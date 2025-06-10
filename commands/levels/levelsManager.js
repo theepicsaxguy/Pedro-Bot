@@ -28,7 +28,10 @@ async function incrementXP(message, xpToAdd) {
     }
 
     // Check if the channel is excluded
-    if (userDoc.excludedChannels.includes(message.channel.id)) return;
+    if (!cachedExcludedChannels) {
+      await refreshExcludedChannelsCache();
+    }
+    if (cachedExcludedChannels.includes(message.channel.id)) return;
 
     // Cooldown check: skip if last message was less than 15 seconds ago
     if (userDoc.lastMessage && (Date.now() - userDoc.lastMessage.getTime()) < 15000) {
