@@ -29,7 +29,7 @@ module.exports = {
       await interaction.reply({
         content: '❌ There was an error fetching your level.',
         flags: MessageFlags.Ephemeral,
-      }).catch(() => {});
+      }).catch(err => errorHandler(err, 'Level Command - reply error'));
     }
   }
 };

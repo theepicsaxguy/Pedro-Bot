@@ -149,7 +149,6 @@ module.exports = {
       // Schedule the lobby start
       scheduler.scheduleLobbyStart(message.id, matchTime, message);
 
-      // Inform user ephemeral
       await interaction.editReply({
         content: '✅ Your matchmaking lobby has been created in #matchmaking!',
         flags: MessageFlags.Ephemeral
@@ -159,7 +158,7 @@ module.exports = {
       await interaction.reply({
         content: '❌ There was an error creating the matchmaking lobby.',
         flags: MessageFlags.Ephemeral,
-      }).catch(() => {});
+      }).catch(err => errorHandler(err, 'Matchmaking Command - reply error'));
     }
   },
 };

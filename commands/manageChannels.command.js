@@ -1,5 +1,5 @@
 // commands/manageChannels.command.js
-const { SlashCommandBuilder, PermissionsBitField } = require('discord.js'); // Updated import
+const { SlashCommandBuilder, PermissionsBitField } = require('discord.js');
 const UserXP = require('../models/UserXP');
 const { MessageFlags } = require('discord.js');
 const errorHandler = require('../utils/errorHandler');
@@ -93,7 +93,7 @@ module.exports = {
       await interaction.reply({
         content: '❌ There was an error managing the excluded channels.',
         flags: MessageFlags.Ephemeral,
-      }).catch(() => {});
+      }).catch(err => errorHandler(err, 'ManageChannels Command - reply error'));
     }
   },
 };
