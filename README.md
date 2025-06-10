@@ -48,12 +48,14 @@ Pedro-Bot/
 │   └── [other-events].js
 ├── models/
 │   ├── Lobby.js
+│   ├── LobbyHistory.js
 │   ├── ReactionRole.js
 │   ├── Schedule.js
 │   ├── Settings.js
 │   └── UserXP.js
 ├── services/
 │   ├── lobbyService.js
+│   ├── historyService.js
 │   ├── scheduleService.js
 │   ├── settingsService.js
 │   └── userService.js
@@ -74,6 +76,7 @@ Pedro-Bot/
 - **`utils/database.js`**: Loads environment variables for MongoDB, then runs `mongoose.connect(...)`. Exported once for the entire app.
 - **`models/*.js`**: Each file defines a Mongoose schema for storing data:
   - `Lobby.js`: For matchmaking lobbies.
+  - `LobbyHistory.js`: Archived lobbies for statistics.
   - `UserXP.js`: For leveling / XP.
   - `ReactionRole.js`: For reaction roles.
 - **`commands/matchmaking/`**: Self-contained logic for the matchmaking system.
@@ -87,12 +90,15 @@ Pedro-Bot/
 ## Matchmaking Feature
 
 1. **Slash Command**: `/matchmaking` (in `commands/matchmaking.js`):
-   - Prompts the user for time selection, game code, description, etc.
+   - Prompts the user for time, lobby size, game code and description.
    - Creates a new message in the configured matchmaking channel (default `#matchmaking`) with an embed and two buttons (JOIN, LEAVE).
    - Creates a new thread under that message for discussion.
    - Stores the lobby data in MongoDB (`Lobby` model).
-   - Schedules a start time with `scheduler.scheduleLobbyStart` to mark the lobby as started and update the embed.
+   - Schedules a start time with `scheduler.scheduleLobbyStart` and cleans up expired lobbies automatically.
    - The role mentioned in the embed is configured with `/settings set-matchmaking-role` and stored in MongoDB.
+   - Uses game-specific templates for lobby embeds.
+   - Completed lobbies are archived in a history collection for statistics.
+   - You can schedule recurring lobbies with the `/schedule` command using these same arguments.
 
 2. **Join/Leave Logic**:
    - Inside `index.js` `interactionCreate` event, we handle `isButton()`.

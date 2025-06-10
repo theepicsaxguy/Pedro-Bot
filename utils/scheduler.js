@@ -3,6 +3,7 @@ const cron = require('node-cron');
 const schedule = require('node-schedule');
 const scheduleService = require('../services/scheduleService');
 const lobbyService = require('../services/lobbyService');
+const historyService = require('../services/historyService');
 const { buildLobbyEmbed } = require('./matchmakingHelpers');
 const errorHandler = require('./errorHandler');
 
@@ -97,6 +98,35 @@ class Scheduler {
     }
   }
 
+  scheduleLobbyCleanup(id, time, channel, threadId) {
+    try {
+      schedule.scheduleJob(time, async () => {
+        try {
+          const data = await lobbyService.getLobby(id);
+          if (!data) return;
+          await historyService.addHistory({
+            gameCode: data.gameCode,
+            creator: data.creator,
+            matchTime: data.matchTime,
+            joinedUsers: data.joinedUsers,
+            description: data.description,
+          });
+          await lobbyService.deleteLobby(id);
+          if (threadId) {
+            const thread = channel.threads.cache.get(threadId);
+            if (thread) await thread.delete();
+          }
+          console.log(`[✅] Lobby ${id} cleaned up.`);
+        } catch (err) {
+          errorHandler(err, `Scheduler - lobby cleanup job "${id}"`);
+        }
+      });
+      console.log(`[✅] Scheduled cleanup for lobby "${id}".`);
+    } catch (error) {
+      errorHandler(error, `Scheduler - scheduleLobbyCleanup "${id}"`);
+    }
+  }
+
   /**
    * Execute a scheduled command.
    * @param {String} commandName - The name of the command to execute.
@@ -111,7 +141,7 @@ class Scheduler {
       }
 
       if (typeof command.executeScheduled === 'function') {
-        await command.executeScheduled(args);
+        await command.executeScheduled(args, this.client);
         console.log(`[✅] Executed scheduled command "/${commandName}" with args: ${JSON.stringify(args)}`);
       } else {
         console.warn(`[⚠️] Command "/${commandName}" does not have an executeScheduled method.`);

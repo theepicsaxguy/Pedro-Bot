@@ -3,8 +3,9 @@ const { EmbedBuilder } = require('discord.js');
 const config = require('../config/constants');
 
 function buildLobbyEmbed(lobbyData) {
+  const template = config.LOBBY_TEMPLATES[lobbyData.gameCode] || {};
   return new EmbedBuilder()
-    .setTitle(`Lobby created ${lobbyData.gameCode}`)
+    .setTitle(template.title || `Lobby created ${lobbyData.gameCode}`)
     .setDescription(`
 **Host:** <@${lobbyData.creator}>
 **Time:** <t:${lobbyData.unixTime}:t>
@@ -16,7 +17,7 @@ function buildLobbyEmbed(lobbyData) {
 Notes: Missions start at designated time (auto-converts to your time).
 All discussion is in the thread. Please click Join/Leave as needed.
 `)
-    .setColor(0x00AE86)
+    .setColor(template.color || 0x00AE86)
     .setFooter({ text: '(MATAC) The Mature Tactical Circle' });
 }
 

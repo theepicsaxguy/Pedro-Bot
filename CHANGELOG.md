@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.0](https://github.com/theepicsaxguy/Pedro-Bot/compare/1.0.3...1.1.0) (2025-06-11)
+
+### Features
+
+* add lobby size limits and game templates
+* cleanup expired lobbies and store history
+* allow scheduled lobbies via `/schedule`
+
 ## [1.0.3](https://github.com/theepicsaxguy/Pedro-Bot/compare/1.0.2...1.0.3) (2025-06-10)
 
 

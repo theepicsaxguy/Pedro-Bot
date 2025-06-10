@@ -20,7 +20,7 @@ module.exports = {
       }
 
       if (typeof command.executeScheduled === 'function') {
-        await command.executeScheduled(args);
+        await command.executeScheduled(args, client);
         console.log(`[✅] Executed scheduled command "/${commandName}" with args: ${JSON.stringify(args)}`);
       } else {
         console.warn(`[⚠️] Command "/${commandName}" does not have an executeScheduled method.`);

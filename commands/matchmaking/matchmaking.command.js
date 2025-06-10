@@ -43,6 +43,13 @@ module.exports = {
       option.setName('description')
         .setDescription('Provide a description for the match')
         .setRequired(true)
+    )
+    .addIntegerOption(option =>
+      option.setName('size')
+        .setDescription('Number of slots (2-12)')
+        .setMinValue(2)
+        .setMaxValue(12)
+        .setRequired(true)
     ),
 
   async execute(interaction) {
@@ -55,6 +62,7 @@ module.exports = {
       const tags = tagsInput.split(',').map(tag => tag.trim()).join(', ');
       const gameCode = interaction.options.getString('game_code');
       const description = interaction.options.getString('description');
+      const size = interaction.options.getInteger('size');
       const creator = interaction.user.id;
       const username = interaction.user.username;
 
@@ -101,7 +109,7 @@ module.exports = {
         tags,
         joinedUsers: [username],
         joinedUserIds: [creator],
-        totalSlots: 6,
+        totalSlots: size,
         description,
         started: false,
         matchTime,
@@ -149,6 +157,8 @@ module.exports = {
 
       // Schedule the lobby start
       scheduler.scheduleLobbyStart(message.id, matchTime, message);
+      const cleanupTime = new Date(matchTime.getTime() + 4 * 60 * 60 * 1000);
+      scheduler.scheduleLobbyCleanup(message.id, cleanupTime, matchmakingChannel, thread.id);
 
       await interaction.editReply({
         content: '✅ Your matchmaking lobby has been created in #matchmaking!',
@@ -161,5 +171,23 @@ module.exports = {
         flags: MessageFlags.Ephemeral,
       }).catch(err => errorHandler(err, 'Matchmaking Command - reply error'));
     }
+  },
+
+  async executeScheduled(args, client) {
+    const guild = client.guilds.cache.get(process.env.GUILD_ID);
+    if (!guild) return;
+    const fakeInteraction = {
+      options: {
+        getString: key => args[key],
+        getInteger: key => args[key],
+      },
+      user: { id: args.creator || client.user.id, username: args.creatorName || 'Scheduler' },
+      deferReply: () => Promise.resolve(),
+      editReply: () => Promise.resolve(),
+      reply: () => Promise.resolve(),
+      guild,
+    };
+
+    await this.execute(fakeInteraction);
   },
 };

@@ -38,7 +38,6 @@ module.exports = {
       // Remove user from lobby
       lobbyData.joinedUsers = lobbyData.joinedUsers.filter(user => user !== username);
       lobbyData.joinedUserIds = lobbyData.joinedUserIds.filter(id => id !== userId);
-      lobbyData.currentSlots = (lobbyData.currentSlots || 1) - 1;
 
       // Remove user from thread
       if (lobbyData.threadId) {
