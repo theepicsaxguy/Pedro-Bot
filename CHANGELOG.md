@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.0.2](https://github.com/theepicsaxguy/Pedro-Bot/compare/1.0.1...1.0.2) (2025-06-10)
+
+
+### Bug Fixes
+
+* **docker:** allow local builds ([#37](https://github.com/theepicsaxguy/Pedro-Bot/issues/37)) ([da1eea7](https://github.com/theepicsaxguy/Pedro-Bot/commit/da1eea72a107f790e17754edab6cfc93a3dcb164))
+* **matchmaking:** correct 4 hour option ([#40](https://github.com/theepicsaxguy/Pedro-Bot/issues/40)) ([b6040ab](https://github.com/theepicsaxguy/Pedro-Bot/commit/b6040aba324700c28a31f9f0ab26f46667c37442))
+* **settings:** avoid interaction usage in scheduled commands ([#39](https://github.com/theepicsaxguy/Pedro-Bot/issues/39)) ([caf9735](https://github.com/theepicsaxguy/Pedro-Bot/commit/caf9735ff1231291e37583a26dd50470ccd96ae1))
+
 ## 1.0.1 (2025-06-10)
 
 
