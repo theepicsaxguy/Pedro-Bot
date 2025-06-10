@@ -3,6 +3,7 @@ const { SlashCommandBuilder,MessageFlags, PermissionsBitField } = require('disco
 const settingsService = require('../../services/settingsService');
 const config = require('../../config/constants');
 const errorHandler = require('../../utils/errorHandler');
+const adminLogService = require('../../services/adminLogService');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -114,6 +115,7 @@ module.exports = {
         content: `✅ Role <@&${role.id}> has been set for Level ${level}.`,
         flags: MessageFlags.Ephemeral,
       });
+      await adminLogService.logAction(interaction.user.id, 'settings set-role', { level, role: role.id });
     }
 
     if (subcommand === 'remove-role') {
@@ -131,6 +133,7 @@ module.exports = {
         content: `✅ Role for Level ${level} has been removed.`,
         flags: MessageFlags.Ephemeral,
       });
+      await adminLogService.logAction(interaction.user.id, 'settings remove-role', { level });
     }
 
     if (subcommand === 'get-roles') {
@@ -151,6 +154,7 @@ module.exports = {
         content: response,
         flags: MessageFlags.Ephemeral,
       });
+      await adminLogService.logAction(interaction.user.id, 'settings get-roles', {});
     }
 
     // New subcommands for Notifications
@@ -169,6 +173,7 @@ module.exports = {
         content: `✅ Notification channel has been set to ${channel}.`,
         flags: MessageFlags.Ephemeral,
       });
+      await adminLogService.logAction(interaction.user.id, 'settings set-notification-channel', { channel: channel.id });
     }
 
     if (subcommand === 'toggle-welcome') {
@@ -178,6 +183,7 @@ module.exports = {
         content: `✅ Welcome messages have been ${enable ? 'enabled' : 'disabled'}.`,
         flags: MessageFlags.Ephemeral,
       });
+      await adminLogService.logAction(interaction.user.id, 'settings toggle-welcome', { enable });
     }
 
     if (subcommand === 'toggle-leave') {
@@ -187,6 +193,7 @@ module.exports = {
         content: `✅ Leave messages have been ${enable ? 'enabled' : 'disabled'}.`,
         flags: MessageFlags.Ephemeral,
       });
+      await adminLogService.logAction(interaction.user.id, 'settings toggle-leave', { enable });
     }
 
     if (subcommand === 'set-welcome-message') {
@@ -205,6 +212,7 @@ module.exports = {
         content: '✅ Welcome message has been updated.',
         flags: MessageFlags.Ephemeral,
       });
+      await adminLogService.logAction(interaction.user.id, 'settings set-welcome-message', {});
     }
 
     if (subcommand === 'set-leave-message') {
@@ -223,6 +231,7 @@ module.exports = {
         content: '✅ Leave message has been updated.',
         flags: MessageFlags.Ephemeral,
       });
+      await adminLogService.logAction(interaction.user.id, 'settings set-leave-message', {});
     }
   },
 

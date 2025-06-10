@@ -1,8 +1,10 @@
 # Pedro-Bot
 
-Pedro-Bot is a Discord bot with two core features:
+Pedro-Bot is a Discord bot with a handful of features:
 1. **Matchmaking** (organizing game lobbies with threads, join/leave buttons, etc.).
 2. **Leveling** (assigning XP for messages and granting roles when users level up).
+3. **Profiles** (view XP, level, and message stats with `/profile`).
+4. **Server Stats** (check member counts with `/serverstats`).
 
 Below is a detailed breakdown of the repository’s structure, how each component works, and how developers can extend it further.
 
@@ -12,11 +14,13 @@ Below is a detailed breakdown of the repository’s structure, how each componen
 1. [Project Structure](#project-structure)
 2. [Matchmaking Feature](#matchmaking-feature)
 3. [Leveling Feature](#leveling-feature)
-4. [Environment Variables](#environment-variables)
-5. [How to Run via Docker Compose](#how-to-run-via-docker-compose)
-6. [Adding New Features](#adding-new-features)
-7. [Reusing Functions and Avoiding Duplicates](#reusing-functions-and-avoiding-duplicates)
-8. [CI/CD and Releases](#cicd-and-releases)
+4. [Profiles](#profiles)
+5. [Server Statistics](#server-statistics)
+6. [Environment Variables](#environment-variables)
+7. [How to Run via Docker Compose](#how-to-run-via-docker-compose)
+8. [Adding New Features](#adding-new-features)
+9. [Reusing Functions and Avoiding Duplicates](#reusing-functions-and-avoiding-duplicates)
+10. [CI/CD and Releases](#cicd-and-releases)
 
 ---
 
@@ -30,12 +34,15 @@ Pedro-Bot/
 │   ├── admin/
 │   │   ├── reactionRoles.command.js
 │   │   ├── schedule.command.js
-│   │   └── settings.command.js
+│   │   ├── settings.command.js
+│   │   └── backup.command.js
 │   ├── levels/
-│   │   └── level.command.js
+│   │   ├── level.command.js
+│   │   └── profile.command.js
 │   ├── matchmaking/
 │   │   └── matchmaking.command.js
-│   └── manageChannels.command.js
+│   ├── manageChannels.command.js
+│   └── serverstats.command.js
 ├── config/
 │   └── constants.js
 ├── events/
@@ -56,7 +63,8 @@ Pedro-Bot/
 │   ├── lobbyService.js
 │   ├── scheduleService.js
 │   ├── settingsService.js
-│   └── userService.js
+│   ├── userService.js
+│   └── adminLogService.js
 ├── utils/
 │   ├── ButtonManager.js
 │   ├── database.js
@@ -76,6 +84,7 @@ Pedro-Bot/
   - `Lobby.js`: For matchmaking lobbies.
   - `UserXP.js`: For leveling / XP.
   - `ReactionRole.js`: For reaction roles.
+  - `AdminLog.js`: Records admin actions for auditing.
 - **`commands/matchmaking/`**: Self-contained logic for the matchmaking system.
 - **`commands/levels/`**: Self-contained logic for leveling. Contains:
   - `levelsManager.js`: Awarding XP and checking level-ups.
@@ -123,6 +132,14 @@ By keeping all “matchmaking” references in `commands/matchmaking/` and using
 This system is minimal, but it can be expanded easily with leaderboards, cooldowns, or advanced spam checks.
 
 ---
+
+## Profiles
+Use `/profile` to display a user\'s XP, level and message count.
+
+## Server Statistics
+The `/serverstats` command shows basic guild info such as member counts and channel totals.
+
+Admins can also back up or restore data using `/backup`.
 
 ## Environment Variables
 

@@ -3,6 +3,7 @@ const { SlashCommandBuilder, PermissionsBitField, MessageFlags } = require('disc
 const scheduleService = require('../../services/scheduleService');
 const scheduler = require('../../utils/scheduler');
 const errorHandler = require('../../utils/errorHandler');
+const adminLogService = require('../../services/adminLogService');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -64,12 +65,12 @@ module.exports = {
 
             try {
                 const schedule = await scheduleService.createSchedule(name, commandName, args, frequency);
-                // Schedule the command execution
                 scheduler.scheduleCommand(schedule);
                 await interaction.reply({
                     content: `✅ Schedule "${name}" has been created and scheduled.`,
                     flags: MessageFlags.Ephemeral,
                 });
+                await adminLogService.logAction(interaction.user.id, 'schedule create', { name, commandName, frequency });
             } catch (error) {
                 errorHandler(error, 'Schedule Command - create');
                 await interaction.reply({
@@ -101,6 +102,7 @@ module.exports = {
                     content: response,
                     flags: MessageFlags.Ephemeral,
                 });
+                await adminLogService.logAction(interaction.user.id, 'schedule list', {});
             } catch (error) {
                 errorHandler(error, 'Schedule Command - list');
                 await interaction.reply({
@@ -130,6 +132,7 @@ module.exports = {
                     content: `✅ Schedule "${name}" has been deleted and unscheduled.`,
                     flags: MessageFlags.Ephemeral,
                 });
+                await adminLogService.logAction(interaction.user.id, 'schedule delete', { name });
             } catch (error) {
                 errorHandler(error, 'Schedule Command - delete');
                 await interaction.reply({

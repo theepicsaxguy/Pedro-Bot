@@ -38,8 +38,9 @@ async function incrementXP(message, xpToAdd) {
       return;
     }
 
-    // Update XP
+    // Update XP and message count
     userDoc.xp += xpToAdd;
+    userDoc.messageCount = (userDoc.messageCount || 0) + 1;
     userDoc.lastMessage = new Date();
 
     // Calculate new level

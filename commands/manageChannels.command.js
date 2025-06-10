@@ -3,6 +3,7 @@ const { SlashCommandBuilder, PermissionsBitField } = require('discord.js');
 const settingsService = require('../services/settingsService');
 const { MessageFlags } = require('discord.js');
 const errorHandler = require('../utils/errorHandler');
+const adminLogService = require('../services/adminLogService');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -52,6 +53,7 @@ module.exports = {
             flags: MessageFlags.Ephemeral,
           });
           console.log(`[ℹ️] ${interaction.user.tag} added channel ${channel.id} to excluded channels.`);
+          await adminLogService.logAction(interaction.user.id, 'managechannels add', { channel: channel.id });
         }
       } else if (subcommand === 'remove') {
         if (!excludedChannels.includes(channel.id)) {
@@ -67,6 +69,7 @@ module.exports = {
             flags: MessageFlags.Ephemeral,
           });
           console.log(`[ℹ️] ${interaction.user.tag} removed channel ${channel.id} from excluded channels.`);
+          await adminLogService.logAction(interaction.user.id, 'managechannels remove', { channel: channel.id });
         }
       } else if (subcommand === 'list') {
         if (excludedChannels.length === 0) {
@@ -80,6 +83,7 @@ module.exports = {
             content: `📋 **Excluded Channels:**\n${channelList}`,
             flags: MessageFlags.Ephemeral,
           });
+          await adminLogService.logAction(interaction.user.id, 'managechannels list', {});
         }
       }
     } catch (error) {
