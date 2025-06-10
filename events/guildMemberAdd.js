@@ -1,5 +1,6 @@
 // events/guildMemberAdd.js
 const settingsService = require('../services/settingsService');
+const discordCache = require('../utils/discordCache');
 const errorHandler = require('../utils/errorHandler');
 
 module.exports = {
@@ -11,7 +12,7 @@ module.exports = {
       const welcomeMessageTemplate = await settingsService.getSetting('welcomeMessage') || 'Welcome to MATAC {user} you are the {memberCount}th member.';
 
       if (welcomeEnabled && notificationChannelId) {
-        const channel = await client.channels.fetch(notificationChannelId);
+        const channel = await discordCache.getChannel(client, notificationChannelId);
         if (channel && channel.isTextBased()) {
           const welcomeMessage = welcomeMessageTemplate
             .replace('{user}', `<@${member.id}>`)

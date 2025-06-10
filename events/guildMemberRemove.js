@@ -1,5 +1,6 @@
 // events/guildMemberRemove.js
 const settingsService = require('../services/settingsService');
+const discordCache = require('../utils/discordCache');
 const errorHandler = require('../utils/errorHandler');
 
 module.exports = {
@@ -11,7 +12,7 @@ module.exports = {
       const leaveMessageTemplate = await settingsService.getSetting('leaveMessage') || '{user}, has left MATAC!';
 
       if (leaveEnabled && notificationChannelId) {
-        const channel = await client.channels.fetch(notificationChannelId);
+        const channel = await discordCache.getChannel(client, notificationChannelId);
         if (channel && channel.isTextBased()) {
           const leaveMessage = leaveMessageTemplate
             .replace('{user}', `<@${member.id}>`);

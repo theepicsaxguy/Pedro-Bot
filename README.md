@@ -72,6 +72,8 @@ Pedro-Bot/
 ### Key Points
 - **`index.js`**: Sets up the Discord client, registers commands, and listens for both interactions (`interactionCreate`) and standard messages (`messageCreate`) for awarding XP.
 - **`utils/database.js`**: Loads environment variables for MongoDB, then runs `mongoose.connect(...)`. Exported once for the entire app.
+- **`utils/cache.js`**: Connects to Redis for caching user levels and settings.
+- **`utils/discordCache.js`**: In-memory cache for guild, channel and role objects.
 - **`models/*.js`**: Each file defines a Mongoose schema for storing data:
   - `Lobby.js`: For matchmaking lobbies.
   - `UserXP.js`: For leveling / XP.
@@ -132,6 +134,7 @@ This system is minimal, but it can be expanded easily with leaderboards, cooldow
 | `CLIENT_ID`       | Your bot’s application client ID                                              |
 | `GUILD_ID`        | The server (guild) ID where you want to register commands                     |
 | `MONGO_URI`       | MongoDB connection string (e.g., `mongodb://mongodb:27017/pedro-bot`)         |
+| `REDIS_URL`       | Redis connection string (e.g., `redis://redis:6379`)                           |
 | `MATCHMAKING_CHANNEL` | Name of the channel used for matchmaking lobbies (default `matchmaking`) |
 
 Note: Role mappings and the matchmaking mention role are configured with the `/settings` command and stored in MongoDB. The matchmaking channel is defined with the `MATCHMAKING_CHANNEL` environment variable.
@@ -156,6 +159,7 @@ Note: Role mappings and the matchmaking mention role are configured with the `/s
          - CLIENT_ID=...
          - GUILD_ID=...
          - MONGO_URI=mongodb://mongodb:27017/pedro-bot
+         - REDIS_URL=redis://redis:6379
        depends_on:
          - mongodb
      mongodb:

@@ -1,5 +1,6 @@
 // services/userService.js
 const UserXP = require('../models/UserXP');
+const cache = require('../utils/cache');
 const errorHandler = require('../utils/errorHandler');
 
 module.exports = {
@@ -10,7 +11,15 @@ module.exports = {
    */
   async getUser(id) {
     try {
-      return await UserXP.findById(id).exec();
+      const cacheKey = `user:${id}`;
+      const cached = await cache.get(cacheKey);
+      if (cached) return JSON.parse(cached);
+
+      const user = await UserXP.findById(id).lean().exec();
+      if (user) {
+        await cache.set(cacheKey, JSON.stringify(user));
+      }
+      return user;
     } catch (error) {
       errorHandler(error, 'User Service - getUser');
       return null;
@@ -25,11 +34,14 @@ module.exports = {
    */
   async setUser(id, data) {
     try {
-      return await UserXP.findByIdAndUpdate(
+      const user = await UserXP.findByIdAndUpdate(
         id,
         { _id: id, ...data },
         { upsert: true, new: true }
-      ).exec();
+      ).lean().exec();
+
+      await cache.set(`user:${id}`, JSON.stringify(user));
+      return user;
     } catch (error) {
       errorHandler(error, 'User Service - setUser');
       throw error;
@@ -43,6 +55,7 @@ module.exports = {
    */
   async deleteUser(id) {
     try {
+      await cache.del(`user:${id}`);
       return await UserXP.findByIdAndDelete(id).exec();
     } catch (error) {
       errorHandler(error, 'User Service - deleteUser');
