@@ -28,7 +28,8 @@ Pedro-Bot/
 │   ├── leave.js
 ├── commands/
 │   ├── admin/
-│   │   ├── schedule.command.js      # New: Schedule Command
+│   │   ├── reactionRoles.command.js
+│   │   ├── schedule.command.js
 │   │   └── settings.command.js
 │   ├── levels/
 │   │   └── level.command.js
@@ -40,10 +41,14 @@ Pedro-Bot/
 ├── events/
 │   ├── interactionCreate.js
 │   ├── messageCreate.js
+│   ├── guildMemberAdd.js
+│   ├── guildMemberRemove.js
+│   ├── commandExecution.js
 │   ├── ready.js
 │   └── [other-events].js
 ├── models/
 │   ├── Lobby.js
+│   ├── ReactionRole.js
 │   ├── Schedule.js
 │   ├── Settings.js
 │   └── UserXP.js
@@ -56,6 +61,7 @@ Pedro-Bot/
 │   ├── ButtonManager.js
 │   ├── database.js
 │   ├── errorHandler.js
+│   ├── levelUtils.js
 │   ├── matchmakingHelpers.js
 │   ├── scheduler.js
 │   ├── roleManager.js
@@ -69,6 +75,7 @@ Pedro-Bot/
 - **`models/*.js`**: Each file defines a Mongoose schema for storing data:
   - `Lobby.js`: For matchmaking lobbies.
   - `UserXP.js`: For leveling / XP.
+  - `ReactionRole.js`: For reaction roles.
 - **`commands/matchmaking/`**: Self-contained logic for the matchmaking system.
 - **`commands/levels/`**: Self-contained logic for leveling. Contains:
   - `levelsManager.js`: Awarding XP and checking level-ups.
@@ -85,6 +92,7 @@ Pedro-Bot/
    - Creates a new thread under that message for discussion.
    - Stores the lobby data in MongoDB (`Lobby` model).
    - Schedules a start time (using `node-schedule` in `index.js`) to mark the lobby as “started” and update the embed.
+   - The role mentioned in the embed is configured with `/settings set-matchmaking-role` and stored in MongoDB.
 
 2. **Join/Leave Logic**:
    - Inside `index.js` `interactionCreate` event, we handle `isButton()`.
@@ -106,10 +114,9 @@ By keeping all “matchmaking” references (like channel name `#matchmaking`) a
    - The logic of awarding XP is in `commands/levels/levelsManager.js` → `incrementXP()`.
    - We store and fetch the user doc from Mongo, add XP, check if that user’s new total crosses the threshold for a new level, and if so, we assign a role and post a “level up” announcement in the channel.
 3. **Level/XP Formula**:  
-   - In `commands/levels/levelUtils.js`, we define functions like `xpRequiredForLevel(level)` and `calculateLevelFromXP(xp)`. This way, we can tweak the progression in a single place.
-4. **Role Assignment**:  
-   - We parse `LEVEL_ROLE_MAP` (an environment variable in JSON form) to avoid hardcoding role IDs.  
-   - If the user hits a new level that appears in the map, we assign that role.
+4. **Role Assignment**:
+   - Roles for each level are stored in MongoDB using the `/settings set-role` command.
+   - When a user levels up, the bot checks if a role is configured for that level and assigns it.
 5. **`/level` Command** (optional, in `level.js`):  
    - A user can check their current XP, level, and how much XP remains until the next level.
 
@@ -125,9 +132,8 @@ This system is minimal, but it can be expanded easily with leaderboards, cooldow
 | `CLIENT_ID`       | Your bot’s application client ID                                              |
 | `GUILD_ID`        | The server (guild) ID where you want to register commands                     |
 | `MONGO_URI`       | MongoDB connection string (e.g., `mongodb://mongodb:27017/pedro-bot`)         |
-| `MATCHMAKING_ROLE_ID` | (Optional) The role ID to mention in the matchmaking embed (if desired)   |
-| `LEVEL_ROLE_MAP`  | JSON mapping level -> role ID, e.g. `{"1":"ROLEID1","2":"ROLEID2","3":"..."} `|
 
+Note: Role mappings and the matchmaking mention role are configured with the `/settings` command and stored in MongoDB.
 **Usage**:  
 - In Docker Compose, set these as environment variables under `pedro-bot`.  
 - See `docker-compose.yml` for an example.
@@ -148,11 +154,10 @@ This system is minimal, but it can be expanded easily with leaderboards, cooldow
          - CLIENT_ID=...
          - GUILD_ID=...
          - MONGO_URI=mongodb://mongodb:27017/pedro-bot
-         - LEVEL_ROLE_MAP='{"1":"1234","2":"5678"}'
        depends_on:
          - mongodb
      mongodb:
-       image: mongo:4.4
+       image: mongo:8.0
        volumes:
          - mongo_data:/data/db
    volumes:
