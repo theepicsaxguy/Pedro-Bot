@@ -18,8 +18,16 @@ services:
       - CLIENT_ID=${CLIENT_ID}
       - GUILD_ID=${GUILD_ID}
       - MONGO_URI=mongodb://mongodb:27017/pedro-bot
+      - REDIS_URI=redis://redis:6379
     depends_on:
       - mongodb
+      - redis
+    networks:
+      - pedro-network
+
+  redis:
+    image: redis:7-alpine
+    restart: always
     networks:
       - pedro-network
 
