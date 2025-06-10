@@ -114,11 +114,12 @@ module.exports = {
         ButtonManager.createButtonRow(['join', 'leave'])
       ];
 
-      // Send to #matchmaking
-      const matchmakingChannel = interaction.guild.channels.cache.find(ch => ch.name === 'matchmaking');
+      // Send to configured matchmaking channel
+      const channelName = process.env.MATCHMAKING_CHANNEL || 'matchmaking';
+      const matchmakingChannel = interaction.guild.channels.cache.find(ch => ch.name === channelName);
       if (!matchmakingChannel) {
         await interaction.editReply({
-          content: '❌ Error: Could not find a channel named #matchmaking.',
+          content: `❌ Error: Could not find a channel named #${channelName}.`,
           flags: MessageFlags.Ephemeral
         });
         return;
