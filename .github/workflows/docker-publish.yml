@@ -5,6 +5,18 @@ on:
   push:
     branches:
       - main
+    paths:
+      - Dockerfile
+      - package.json
+      - package-lock.json
+      - index.js
+      - commands/**
+      - services/**
+      - utils/**
+      - config/**
+      - events/**
+      - models/**
+      - buttons/**
   release:
     types: [created]
 
