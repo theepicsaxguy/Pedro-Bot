@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.3](https://github.com/theepicsaxguy/Pedro-Bot/compare/1.0.2...1.0.3) (2025-06-10)
+
+
+### Bug Fixes
+
+* **docker:** tag release images with version ([#44](https://github.com/theepicsaxguy/Pedro-Bot/issues/44)) ([0c151c1](https://github.com/theepicsaxguy/Pedro-Bot/commit/0c151c1e92a71bc2b336b330c2b3d2f7dbf2459a))
+
 ## [1.0.2](https://github.com/theepicsaxguy/Pedro-Bot/compare/1.0.1...1.0.2) (2025-06-10)
 
 
