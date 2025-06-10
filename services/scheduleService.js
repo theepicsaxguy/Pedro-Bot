@@ -67,4 +67,13 @@ module.exports = {
       throw error;
     }
   },
+
+  async getScheduleCount() {
+    try {
+      return await Schedule.countDocuments().exec();
+    } catch (error) {
+      errorHandler(error, 'Schedule Service - getScheduleCount');
+      return 0;
+    }
+  },
 };

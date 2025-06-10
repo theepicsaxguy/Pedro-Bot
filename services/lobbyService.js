@@ -49,4 +49,13 @@ module.exports = {
       throw error;
     }
   },
+
+  async getActiveLobbyCount() {
+    try {
+      return await Lobby.countDocuments({ started: false }).exec();
+    } catch (error) {
+      errorHandler(error, 'Lobby Service - getActiveLobbyCount');
+      return 0;
+    }
+  },
 };

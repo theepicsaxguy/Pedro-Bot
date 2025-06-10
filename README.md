@@ -12,12 +12,16 @@ Below is a detailed breakdown of the repository’s structure, how each componen
 1. [Project Structure](#project-structure)
 2. [Matchmaking Feature](#matchmaking-feature)
 3. [Leveling Feature](#leveling-feature)
-4. [Environment Variables](#environment-variables)
-5. [How to Run via Docker Compose](#how-to-run-via-docker-compose)
-6. [Health Check](#health-check)
-7. [Adding New Features](#adding-new-features)
-8. [Reusing Functions and Avoiding Duplicates](#reusing-functions-and-avoiding-duplicates)
-9. [CI/CD and Releases](#cicd-and-releases)
+4. [User Profiles](#user-profiles)
+5. [Server Statistics](#server-statistics)
+6. [Backup and Restore](#backup-and-restore)
+7. [Admin Audit Logs](#admin-audit-logs)
+8. [Environment Variables](#environment-variables)
+9. [How to Run via Docker Compose](#how-to-run-via-docker-compose)
+10. [Health Check](#health-check)
+11. [Adding New Features](#adding-new-features)
+12. [Reusing Functions and Avoiding Duplicates](#reusing-functions-and-avoiding-duplicates)
+13. [CI/CD and Releases](#cicd-and-releases)
 
 ---
 
@@ -131,6 +135,22 @@ By keeping all “matchmaking” references in `commands/matchmaking/` and using
 This system is minimal, but it can be expanded easily with leaderboards, cooldowns, or advanced spam checks.
 
 ---
+
+## User Profiles
+
+Use `/profile` to see your level, XP, and rank. The command reads from the same `UserXP` collection used by the leveling system.
+
+## Server Statistics
+
+`/serverstats` shows total members, how many users have XP records, the number of active lobbies, and how many scheduled commands are defined.
+
+## Backup and Restore
+
+Admins can run `/backup create` to save the database to `backups/`. Use `/backup restore file:<path>` to restore from a saved file.
+
+## Admin Audit Logs
+
+Every admin command writes a record to MongoDB. Query the `AuditLog` collection to review changes.
 
 ## Environment Variables
 

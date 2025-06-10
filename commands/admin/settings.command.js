@@ -3,6 +3,7 @@ const { SlashCommandBuilder,MessageFlags, PermissionsBitField } = require('disco
 const settingsService = require('../../services/settingsService');
 const config = require('../../config/constants');
 const errorHandler = require('../../utils/errorHandler');
+const auditService = require('../../services/auditService');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -110,6 +111,7 @@ module.exports = {
       }
 
       await settingsService.setRoleForLevel(level, role.id);
+      await auditService.logAction(interaction.user.id, 'settings:set-role', { level, role: role.id });
       return interaction.reply({
         content: `✅ Role <@&${role.id}> has been set for Level ${level}.`,
         flags: MessageFlags.Ephemeral,
@@ -127,6 +129,7 @@ module.exports = {
       }
 
       await settingsService.setRoleForLevel(level, null);
+      await auditService.logAction(interaction.user.id, 'settings:remove-role', { level });
       return interaction.reply({
         content: `✅ Role for Level ${level} has been removed.`,
         flags: MessageFlags.Ephemeral,
@@ -165,6 +168,7 @@ module.exports = {
       }
 
       await settingsService.setSetting('notificationChannelId', channel.id);
+      await auditService.logAction(interaction.user.id, 'settings:set-notification-channel', { channel: channel.id });
       return interaction.reply({
         content: `✅ Notification channel has been set to ${channel}.`,
         flags: MessageFlags.Ephemeral,
@@ -174,6 +178,7 @@ module.exports = {
     if (subcommand === 'toggle-welcome') {
       const enable = interaction.options.getBoolean('enable');
       await settingsService.setSetting('welcomeEnabled', enable);
+      await auditService.logAction(interaction.user.id, 'settings:toggle-welcome', { enable });
       return interaction.reply({
         content: `✅ Welcome messages have been ${enable ? 'enabled' : 'disabled'}.`,
         flags: MessageFlags.Ephemeral,
@@ -183,6 +188,7 @@ module.exports = {
     if (subcommand === 'toggle-leave') {
       const enable = interaction.options.getBoolean('enable');
       await settingsService.setSetting('leaveEnabled', enable);
+      await auditService.logAction(interaction.user.id, 'settings:toggle-leave', { enable });
       return interaction.reply({
         content: `✅ Leave messages have been ${enable ? 'enabled' : 'disabled'}.`,
         flags: MessageFlags.Ephemeral,
@@ -201,6 +207,7 @@ module.exports = {
       }
 
       await settingsService.setSetting('welcomeMessage', message);
+      await auditService.logAction(interaction.user.id, 'settings:set-welcome-message');
       return interaction.reply({
         content: '✅ Welcome message has been updated.',
         flags: MessageFlags.Ephemeral,
@@ -219,6 +226,7 @@ module.exports = {
       }
 
       await settingsService.setSetting('leaveMessage', message);
+      await auditService.logAction(interaction.user.id, 'settings:set-leave-message');
       return interaction.reply({
         content: '✅ Leave message has been updated.',
         flags: MessageFlags.Ephemeral,

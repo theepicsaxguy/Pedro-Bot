@@ -81,4 +81,16 @@ module.exports = {
       return 0;
     }
   },
+
+  async getUserRank(id) {
+    try {
+      const user = await UserXP.findById(id).exec();
+      if (!user) return 0;
+      const better = await UserXP.countDocuments({ xp: { $gt: user.xp } }).exec();
+      return better + 1;
+    } catch (error) {
+      errorHandler(error, 'User Service - getUserRank');
+      return 0;
+    }
+  },
 };
