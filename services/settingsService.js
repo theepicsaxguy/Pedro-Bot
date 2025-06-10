@@ -71,7 +71,9 @@ module.exports = {
    */
   async setRoleForLevel(level, roleId) {
     try {
-      return await this.setSetting(`levelRole_${level}`, roleId);
+      const result = await this.setSetting(`levelRole_${level}`, roleId);
+      await cache.del('setting:roleMap'); // Invalidate the aggregated cache
+      return result;
     } catch (error) {
       errorHandler(error, 'Settings Service - setRoleForLevel');
       throw error;
