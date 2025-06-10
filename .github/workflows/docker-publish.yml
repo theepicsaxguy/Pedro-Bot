@@ -17,6 +17,19 @@ on:
       - events/**
       - models/**
       - buttons/**
+  pull_request:
+    paths:
+      - Dockerfile
+      - package.json
+      - package-lock.json
+      - index.js
+      - commands/**
+      - services/**
+      - utils/**
+      - config/**
+      - events/**
+      - models/**
+      - buttons/**
   release:
     types: [created]
 
@@ -45,6 +58,7 @@ jobs:
           images: ghcr.io/${{ github.repository }}/pedro-bot
           tags: |
             type=raw,value=latest,enable={{is_default_branch}}
+            type=ref,event=pr
             type=sha,prefix=,format=short
             type=semver,pattern={{version}},value=${{ github.ref_name }}
 
