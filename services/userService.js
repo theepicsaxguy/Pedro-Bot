@@ -1,6 +1,7 @@
 // services/userService.js
 const UserXP = require('../models/UserXP');
 const errorHandler = require('../utils/errorHandler');
+const cache = require('../utils/cache');
 
 module.exports = {
   /**
@@ -10,7 +11,11 @@ module.exports = {
    */
   async getUser(id) {
     try {
-      return await UserXP.findById(id).exec();
+      const cached = await cache.get(`user:${id}`);
+      if (cached) return JSON.parse(cached);
+      const doc = await UserXP.findById(id).exec();
+      if (doc) await cache.set(`user:${id}`, JSON.stringify(doc));
+      return doc;
     } catch (error) {
       errorHandler(error, 'User Service - getUser');
       return null;
@@ -25,11 +30,13 @@ module.exports = {
    */
   async setUser(id, data) {
     try {
-      return await UserXP.findByIdAndUpdate(
+      const doc = await UserXP.findByIdAndUpdate(
         id,
         { _id: id, ...data },
         { upsert: true, new: true }
       ).exec();
+      await cache.set(`user:${id}`, JSON.stringify(doc));
+      return doc;
     } catch (error) {
       errorHandler(error, 'User Service - setUser');
       throw error;
@@ -43,7 +50,9 @@ module.exports = {
    */
   async deleteUser(id) {
     try {
-      return await UserXP.findByIdAndDelete(id).exec();
+      const doc = await UserXP.findByIdAndDelete(id).exec();
+      await cache.del(`user:${id}`);
+      return doc;
     } catch (error) {
       errorHandler(error, 'User Service - deleteUser');
       throw error;
@@ -58,11 +67,16 @@ module.exports = {
    */
   async getTopUsers(limit, skip) {
     try {
-      return await UserXP.find({})
+      const cacheKey = `topUsers:${limit}:${skip}`;
+      const cached = await cache.get(cacheKey);
+      if (cached) return JSON.parse(cached);
+      const users = await UserXP.find({})
         .sort({ xp: -1 })
         .skip(skip)
         .limit(limit)
         .exec();
+      await cache.setEx(cacheKey, 60, JSON.stringify(users));
+      return users;
     } catch (error) {
       errorHandler(error, 'User Service - getTopUsers');
       return [];
@@ -75,7 +89,12 @@ module.exports = {
    */
   async getUserCount() {
     try {
-      return await UserXP.countDocuments().exec();
+      const cacheKey = 'userCount';
+      const cached = await cache.get(cacheKey);
+      if (cached) return Number(cached);
+      const count = await UserXP.countDocuments().exec();
+      await cache.setEx(cacheKey, 60, String(count));
+      return count;
     } catch (error) {
       errorHandler(error, 'User Service - getUserCount');
       return 0;

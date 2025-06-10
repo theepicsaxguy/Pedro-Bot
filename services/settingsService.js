@@ -1,6 +1,7 @@
 // services/settingsService.js
 const Settings = require('../models/Settings');
 const errorHandler = require('../utils/errorHandler');
+const cache = require('../utils/cache');
 
 module.exports = {
   /**
@@ -10,8 +11,12 @@ module.exports = {
    */
   async getSetting(key) {
     try {
+      const cached = await cache.get(`setting:${key}`);
+      if (cached !== null) return JSON.parse(cached);
       const setting = await Settings.findOne({ key }).exec();
-      return setting ? setting.value : null;
+      const value = setting ? setting.value : null;
+      if (value !== null) await cache.set(`setting:${key}`, JSON.stringify(value));
+      return value;
     } catch (error) {
       errorHandler(error, 'Settings Service - getSetting');
       return null;
@@ -26,11 +31,13 @@ module.exports = {
    */
   async setSetting(key, value) {
     try {
-      return await Settings.findOneAndUpdate(
+      const doc = await Settings.findOneAndUpdate(
         { key },
         { value },
         { upsert: true, new: true }
       ).exec();
+      await cache.set(`setting:${key}`, JSON.stringify(doc.value));
+      return doc;
     } catch (error) {
       errorHandler(error, 'Settings Service - setSetting');
       throw error;
@@ -44,8 +51,7 @@ module.exports = {
    */
   async getRoleByLevel(level) {
     try {
-      const setting = await Settings.findOne({ key: `levelRole_${level}` }).exec();
-      return setting ? setting.value : null;
+      return await module.exports.getSetting(`levelRole_${level}`);
     } catch (error) {
       errorHandler(error, 'Settings Service - getRoleByLevel');
       return null;
@@ -60,11 +66,13 @@ module.exports = {
    */
   async setRoleForLevel(level, roleId) {
     try {
-      return await Settings.findOneAndUpdate(
+      const doc = await Settings.findOneAndUpdate(
         { key: `levelRole_${level}` },
         { value: roleId },
         { upsert: true, new: true }
       ).exec();
+      await cache.set(`setting:levelRole_${level}`, JSON.stringify(doc.value));
+      return doc;
     } catch (error) {
       errorHandler(error, 'Settings Service - setRoleForLevel');
       throw error;
@@ -77,12 +85,16 @@ module.exports = {
    */
   async getAllRoleMappings() {
     try {
+      const cacheKey = 'roleMappings';
+      const cached = await cache.get(cacheKey);
+      if (cached) return JSON.parse(cached);
       const mappings = await Settings.find({ key: /^levelRole_/ }).exec();
       const roleMap = {};
       mappings.forEach(mapping => {
         const level = mapping.key.replace('levelRole_', '');
         roleMap[level] = mapping.value;
       });
+      await cache.set(cacheKey, JSON.stringify(roleMap));
       return roleMap;
     } catch (error) {
       errorHandler(error, 'Settings Service - getAllRoleMappings');

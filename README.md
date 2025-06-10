@@ -77,6 +77,7 @@ Pedro-Bot/
 ### Key Points
 - **`index.js`**: Sets up the Discord client, registers commands, and listens for both interactions (`interactionCreate`) and standard messages (`messageCreate`) for awarding XP.
 - **`utils/database.js`**: Loads environment variables for MongoDB, then runs `mongoose.connect(...)`. Exported once for the entire app.
+- **`utils/cache.js`**: Connects to Redis for caching frequently accessed data.
 - **`models/*.js`**: Each file defines a Mongoose schema for storing data:
   - `Lobby.js`: For matchmaking lobbies.
   - `UserXP.js`: For leveling / XP.
@@ -166,6 +167,7 @@ Every admin command writes a record to MongoDB. Query the `AuditLog` collection 
 | `CLIENT_ID`       | Your bot’s application client ID                                              |
 | `GUILD_ID`        | The server (guild) ID where you want to register commands                     |
 | `MONGO_URI`       | MongoDB connection string (e.g., `mongodb://mongodb:27017/pedro-bot`)         |
+| `REDIS_URI`       | Redis connection string (e.g., `redis://redis:6379`)           |
 | `MATCHMAKING_CHANNEL` | Name of the channel used for matchmaking lobbies (default `matchmaking`) |
 | `HEALTH_PORT` | Port for the health endpoint (default `3000`)
 
@@ -194,14 +196,18 @@ Docker secrets can be used to supply sensitive values like `DISCORD_TOKEN`.
          - CLIENT_ID=...
          - GUILD_ID=...
          - MONGO_URI=mongodb://mongodb:27017/pedro-bot
+         - REDIS_URI=redis://redis:6379
        depends_on:
          - mongodb
+         - redis
      mongodb:
        image: mongo:7.0
        volumes:
          - mongo_data:/data/db
-   volumes:
-     mongo_data:
+     redis:
+       image: redis:7-alpine
+  volumes:
+    mongo_data:
 
 4. The repository includes a `.dockerignore` so your build context stays small.
 5. Run `docker compose build` && `docker compose up -d` (or `docker compose up --build -d`).

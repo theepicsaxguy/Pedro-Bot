@@ -11,6 +11,8 @@ const config = require('./config/constants');
 
 // Load Mongo connection
 require('./utils/database');
+// Connect to Redis
+require('./utils/cache');
 
 // Initialize Discord Client
 const client = new Client({

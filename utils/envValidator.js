@@ -1,4 +1,4 @@
-const required = ['DISCORD_TOKEN', 'CLIENT_ID', 'GUILD_ID', 'MONGO_URI'];
+const required = ['DISCORD_TOKEN', 'CLIENT_ID', 'GUILD_ID', 'MONGO_URI', 'REDIS_URI'];
 module.exports = () => {
   const missing = required.filter(k => !process.env[k]);
   if (missing.length) {

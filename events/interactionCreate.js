@@ -5,6 +5,7 @@ const leaveButton = require('../buttons/leave');
 const errorHandler = require('../utils/errorHandler');
 const config = require('../config/constants');
 const ReactionRole = require('../models/ReactionRole');
+const discordCache = require('../utils/discordCache');
 
 module.exports = {
   name: 'interactionCreate',
@@ -98,7 +99,7 @@ async function handleReactionRoleButton(interaction, client) {
   }
 
   const roleObj = reactionRole.roles[index];
-  const role = interaction.guild.roles.cache.get(roleObj.roleId);
+  const role = await discordCache.getRole(interaction.guild, roleObj.roleId);
   if (!role) {
     return interaction.reply({
       content: `❌ The role associated with this button no longer exists.`,
@@ -106,7 +107,7 @@ async function handleReactionRoleButton(interaction, client) {
     });
   }
 
-  const member = await interaction.guild.members.fetch(user.id);
+  const member = await discordCache.getMember(interaction.guild, user.id);
 
   if (member.roles.cache.has(role.id)) {
     // Remove the role

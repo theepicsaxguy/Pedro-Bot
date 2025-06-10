@@ -6,6 +6,7 @@ const settingsService = require('../../services/settingsService');
 const config = require('../../config/constants');
 const { MessageFlags } = require('discord.js');
 const errorHandler = require('../../utils/errorHandler');
+const discordCache = require('../../utils/discordCache');
 
 /**
  * Update a user's XP and handle level changes.
@@ -52,7 +53,7 @@ async function incrementXP(userId, guild, channel, baseXP, activity = 'MESSAGE')
     await userService.setUser(userId, userDoc);
 
     if (newLevel > oldLevel) {
-      const member = await guild.members.fetch(userId);
+      const member = await discordCache.getMember(guild, userId);
       if (member) await roleManager.assignRole(member, newLevel);
       if (channel) {
         await channel.send({
@@ -61,7 +62,7 @@ async function incrementXP(userId, guild, channel, baseXP, activity = 'MESSAGE')
         });
       }
     } else if (newLevel < oldLevel) {
-      const member = await guild.members.fetch(userId);
+      const member = await discordCache.getMember(guild, userId);
       if (member) await roleManager.removeRole(member, oldLevel);
     }
   } catch (error) {
