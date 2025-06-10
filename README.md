@@ -229,7 +229,7 @@ CI/CD and Releases
 
 GitHub Actions build and publish the Docker image whenever application code or build files change on `main` or in a pull request, or when a new release tag is created. Documentation or workflow tweaks won't trigger a new image. Each pull request gets its own `pr-N` image tag, letting you test the container before merging. Releases are handled by `release-please`, which opens a pull request proposing the next version. Once that PR is merged, GitHub tags the repo and the Docker workflow publishes images with `latest`, the short commit SHA, and the release version (for example `1.0.1`). Release-please stores version numbers in `.release-please-manifest.json`; the file shows up after the first release.
 
-Release tags follow the classic `vX.Y.Z` format. Downstream jobs, such as the Docker workflow, use that tag directly when naming images.
+Release tags simply use `X.Y.Z`. Downstream jobs, including the Docker workflow, use that tag directly when naming images.
 
 
 ---
