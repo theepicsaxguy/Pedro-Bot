@@ -1,7 +1,8 @@
-const guilds = new Map();
-const channels = new Map();
-const roles = new Map();
+const LRUCache = require('lru-cache');
 
+const guilds = new LRUCache({ max: 100 });
+const channels = new LRUCache({ max: 100 });
+const roles = new LRUCache({ max: 100 });
 module.exports = {
   async getGuild(client, id) {
     if (guilds.has(id)) return guilds.get(id);
