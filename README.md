@@ -15,9 +15,10 @@ Below is a detailed breakdown of the repository’s structure, how each componen
 4. [Environment Variables](#environment-variables)
 5. [How to Run via Docker Compose](#how-to-run-via-docker-compose)
 6. [Health Check](#health-check)
-7. [Adding New Features](#adding-new-features)
-8. [Reusing Functions and Avoiding Duplicates](#reusing-functions-and-avoiding-duplicates)
-9. [CI/CD and Releases](#cicd-and-releases)
+7. [Caching](#caching)
+8. [Adding New Features](#adding-new-features)
+9. [Reusing Functions and Avoiding Duplicates](#reusing-functions-and-avoiding-duplicates)
+10. [CI/CD and Releases](#cicd-and-releases)
 
 ---
 
@@ -142,6 +143,7 @@ This system is minimal, but it can be expanded easily with leaderboards, cooldow
 | `MONGO_URI`       | MongoDB connection string (e.g., `mongodb://mongodb:27017/pedro-bot`)         |
 | `MATCHMAKING_CHANNEL` | Name of the channel used for matchmaking lobbies (default `matchmaking`) |
 | `HEALTH_PORT` | Port for the health endpoint (default `3000`)
+| `REDIS_URL` | Redis connection string (e.g., `redis://redis:6379`) |
 
 Note: Role mappings and the matchmaking mention role are configured with the `/settings` command and stored in MongoDB. The matchmaking channel is defined with the `MATCHMAKING_CHANNEL` environment variable.
 **Usage**:  
@@ -187,6 +189,11 @@ Docker secrets can be used to supply sensitive values like `DISCORD_TOKEN`.
 ## Health Check
 
 The bot exposes `GET /health` on the port defined by `HEALTH_PORT` (defaults to `3000`). A response of `OK` indicates the service is up.
+
+
+## Caching
+
+Redis caches user profiles and settings to cut down on database lookups. Discord channel fetches are stored in memory to avoid hitting the API repeatedly.
 
 
 ---

@@ -8,6 +8,7 @@ const { Client, GatewayIntentBits, Collection, REST, Routes } = require('discord
 const scheduler = require('./utils/scheduler');
 const errorHandler = require('./utils/errorHandler');
 const config = require('./config/constants');
+require('./utils/redisClient');
 
 // Load Mongo connection
 require('./utils/database');

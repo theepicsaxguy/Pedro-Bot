@@ -1,6 +1,7 @@
 // services/userService.js
 const UserXP = require('../models/UserXP');
 const errorHandler = require('../utils/errorHandler');
+const redis = require('../utils/redisClient');
 
 module.exports = {
   /**
@@ -10,7 +11,13 @@ module.exports = {
    */
   async getUser(id) {
     try {
-      return await UserXP.findById(id).exec();
+      const cacheKey = `user:${id}`;
+      const cached = await redis.get(cacheKey);
+      if (cached) return JSON.parse(cached);
+
+      const user = await UserXP.findById(id).exec();
+      if (user) await redis.set(cacheKey, JSON.stringify(user));
+      return user;
     } catch (error) {
       errorHandler(error, 'User Service - getUser');
       return null;
@@ -25,11 +32,13 @@ module.exports = {
    */
   async setUser(id, data) {
     try {
-      return await UserXP.findByIdAndUpdate(
+      const updated = await UserXP.findByIdAndUpdate(
         id,
         { _id: id, ...data },
         { upsert: true, new: true }
       ).exec();
+      if (updated) await redis.set(`user:${id}`, JSON.stringify(updated));
+      return updated;
     } catch (error) {
       errorHandler(error, 'User Service - setUser');
       throw error;
@@ -43,7 +52,9 @@ module.exports = {
    */
   async deleteUser(id) {
     try {
-      return await UserXP.findByIdAndDelete(id).exec();
+      const result = await UserXP.findByIdAndDelete(id).exec();
+      await redis.del(`user:${id}`);
+      return result;
     } catch (error) {
       errorHandler(error, 'User Service - deleteUser');
       throw error;

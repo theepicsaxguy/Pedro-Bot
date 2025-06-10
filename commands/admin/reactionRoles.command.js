@@ -3,6 +3,7 @@ const { SlashCommandBuilder, PermissionsBitField, ActionRowBuilder,MessageFlags,
 const ReactionRole = require('../../models/ReactionRole');
 const errorHandler = require('../../utils/errorHandler');
 const ButtonManager = require('../../utils/ButtonManager');
+const discordCache = require('../../utils/discordCache');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -172,7 +173,7 @@ module.exports = {
                 }
 
                 // Fetch the message to remove components
-                const channel = await interaction.guild.channels.fetch(reactionRole.channelId);
+                const channel = await discordCache.getChannel(interaction.client, reactionRole.channelId);
                 if (channel && channel.isTextBased()) {
                     const message = await channel.messages.fetch(reactionRole.messageId);
                     if (message) {
