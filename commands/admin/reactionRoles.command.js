@@ -3,6 +3,7 @@ const { SlashCommandBuilder, PermissionsBitField, ActionRowBuilder,MessageFlags,
 const ReactionRole = require('../../models/ReactionRole');
 const errorHandler = require('../../utils/errorHandler');
 const ButtonManager = require('../../utils/ButtonManager');
+const auditService = require('../../services/auditService');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -143,7 +144,7 @@ module.exports = {
                 });
 
                 await reactionRole.save();
-
+                await auditService.logAction(interaction.user.id, 'reactionroles:create', { messageId: message.id });
                 await interaction.reply({
                     content: '✅ Reaction role message has been created successfully.',
                     flags: MessageFlags.Ephemeral,
@@ -184,7 +185,7 @@ module.exports = {
 
                 // Remove from database
                 await ReactionRole.deleteOne({ messageId }).exec();
-
+                await auditService.logAction(interaction.user.id, 'reactionroles:delete', { messageId });
                 await interaction.reply({
                     content: `✅ Reaction role message with ID "${messageId}" has been deleted.`,
                     flags: MessageFlags.Ephemeral,

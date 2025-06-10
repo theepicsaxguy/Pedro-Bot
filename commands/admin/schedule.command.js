@@ -3,6 +3,7 @@ const { SlashCommandBuilder, PermissionsBitField, MessageFlags } = require('disc
 const scheduleService = require('../../services/scheduleService');
 const scheduler = require('../../utils/scheduler');
 const errorHandler = require('../../utils/errorHandler');
+const auditService = require('../../services/auditService');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -64,8 +65,8 @@ module.exports = {
 
             try {
                 const schedule = await scheduleService.createSchedule(name, commandName, args, frequency);
-                // Schedule the command execution
                 scheduler.scheduleCommand(schedule);
+                await auditService.logAction(interaction.user.id, 'schedule:create', { name, commandName, frequency });
                 await interaction.reply({
                     content: `✅ Schedule "${name}" has been created and scheduled.`,
                     flags: MessageFlags.Ephemeral,
@@ -126,6 +127,7 @@ module.exports = {
                 scheduler.unscheduleCommand(name);
 
                 await scheduleService.deleteSchedule(name);
+                await auditService.logAction(interaction.user.id, 'schedule:delete', { name });
                 await interaction.reply({
                     content: `✅ Schedule "${name}" has been deleted and unscheduled.`,
                     flags: MessageFlags.Ephemeral,
