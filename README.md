@@ -249,6 +249,8 @@ GitHub Actions build and publish the Docker image whenever application code or b
 
 Release tags simply use `X.Y.Z`. Downstream jobs, including the Docker workflow, use that tag directly when naming images.
 
+The repository also runs a PR Validation workflow on every branch and pull request. It installs dependencies, checks formatting with ESLint and Prettier, audits dependencies, runs the unit tests, and ensures the Docker image builds and can start.
+
 
 ---
 
