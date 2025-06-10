@@ -12,8 +12,9 @@ services:
         target: /app/data
     restart: always
     pull_policy: build
+    secrets:
+      - discord_token
     environment:
-      - DISCORD_TOKEN=${DISCORD_TOKEN}
       - CLIENT_ID=${CLIENT_ID}
       - GUILD_ID=${GUILD_ID}
       - MONGO_URI=mongodb://mongodb:27017/pedro-bot
@@ -35,4 +36,8 @@ volumes:
   mongo_data:
 
 networks:
-  pedro-network:
+  pedro-network
+
+secrets:
+  discord_token:
+    file: ./secrets/discord_token
