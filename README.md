@@ -197,7 +197,7 @@ Docker secrets can be used to supply sensitive values like `DISCORD_TOKEN`.
        depends_on:
          - mongodb
      mongodb:
-       image: mongo:8.0
+       image: mongo:7.0
        volumes:
          - mongo_data:/data/db
    volumes:
