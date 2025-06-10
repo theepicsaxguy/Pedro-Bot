@@ -1,5 +1,7 @@
 // index.js
 require('dotenv').config();
+require('./utils/envValidator')();
+require('./utils/healthServer')();
 const fs = require('fs');
 const path = require('path');
 const { Client, GatewayIntentBits, Collection, REST, Routes } = require('discord.js');

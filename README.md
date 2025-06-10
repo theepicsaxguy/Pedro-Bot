@@ -14,9 +14,10 @@ Below is a detailed breakdown of the repository’s structure, how each componen
 3. [Leveling Feature](#leveling-feature)
 4. [Environment Variables](#environment-variables)
 5. [How to Run via Docker Compose](#how-to-run-via-docker-compose)
-6. [Adding New Features](#adding-new-features)
-7. [Reusing Functions and Avoiding Duplicates](#reusing-functions-and-avoiding-duplicates)
-8. [CI/CD and Releases](#cicd-and-releases)
+6. [Health Check](#health-check)
+7. [Adding New Features](#adding-new-features)
+8. [Reusing Functions and Avoiding Duplicates](#reusing-functions-and-avoiding-duplicates)
+9. [CI/CD and Releases](#cicd-and-releases)
 
 ---
 
@@ -103,6 +104,7 @@ Pedro-Bot/
    - `updateLobbyEmbed` re-edits the original message.
 
 By keeping all “matchmaking” references in `commands/matchmaking/` and using the `MATCHMAKING_CHANNEL` environment variable for the channel name, we avoid scattering that code throughout the project.
+| `HEALTH_PORT` | Port for the health endpoint (default `3000`)
 
 ---
 
@@ -139,9 +141,12 @@ This system is minimal, but it can be expanded easily with leaderboards, cooldow
 | `GUILD_ID`        | The server (guild) ID where you want to register commands                     |
 | `MONGO_URI`       | MongoDB connection string (e.g., `mongodb://mongodb:27017/pedro-bot`)         |
 | `MATCHMAKING_CHANNEL` | Name of the channel used for matchmaking lobbies (default `matchmaking`) |
+| `HEALTH_PORT` | Port for the health endpoint (default `3000`)
 
 Note: Role mappings and the matchmaking mention role are configured with the `/settings` command and stored in MongoDB. The matchmaking channel is defined with the `MATCHMAKING_CHANNEL` environment variable.
 **Usage**:  
+The application exits if any of the required variables are missing at startup.
+Docker secrets can be used to supply sensitive values like `DISCORD_TOKEN`.
 - In Docker Compose, set these as environment variables under `pedro-bot`.  
 - See `docker-compose.yml` for an example.
 
@@ -157,8 +162,9 @@ Note: Role mappings and the matchmaking mention role are configured with the `/s
      pedro-bot:
        build:
          context: .
-       environment:
-         - DISCORD_TOKEN=...
+    secrets:
+      - discord_token
+    environment:
          - CLIENT_ID=...
          - GUILD_ID=...
          - MONGO_URI=mongodb://mongodb:27017/pedro-bot
@@ -177,6 +183,10 @@ Note: Role mappings and the matchmaking mention role are configured with the `/s
 6. Your bot will connect to Discord, connect to Mongo, register slash commands, and start listening for messages.
 
 
+
+## Health Check
+
+The bot exposes `GET /health` on the port defined by `HEALTH_PORT` (defaults to `3000`). A response of `OK` indicates the service is up.
 
 
 ---
