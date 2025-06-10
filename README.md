@@ -227,7 +227,7 @@ These practices ensure that if you rename or remove a channel, or if you want to
 
 CI/CD and Releases
 
-The repository ships with GitHub Actions that build and publish the Docker image whenever code lands on `main` or when a new release tag is created. Releases are handled by `release-please`, which opens a pull request proposing the next version. Once the release PR is merged, GitHub creates a tag and the Docker workflow publishes images to GHCR with `latest`, the short commit SHA, and the release version. Release-please reads `.release-please-manifest.json` to track package versions, so keep that file in the repo root.
+The repository ships with GitHub Actions that build and publish the Docker image whenever code lands on `main` or when a new release tag is created. Releases are handled by `release-please`, which opens a pull request proposing the next version. Once the release PR is merged, GitHub creates a tag and the Docker workflow publishes images to GHCR with `latest`, the short commit SHA, and the release version number (for example `1.0.1`). Release-please reads `.release-please-manifest.json` to track package versions, so keep that file in the repo root.
 
 Release tags follow the classic `vX.Y.Z` format. Downstream jobs, such as the Docker workflow, use that tag directly when naming images.
 
