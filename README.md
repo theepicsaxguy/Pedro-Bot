@@ -91,7 +91,7 @@ Pedro-Bot/
    - Creates a new message in the `#matchmaking` channel with an embed and two buttons (JOIN, LEAVE).
    - Creates a new thread under that message for discussion.
    - Stores the lobby data in MongoDB (`Lobby` model).
-   - Schedules a start time (using `node-schedule` in `index.js`) to mark the lobby as “started” and update the embed.
+   - Schedules a start time with `scheduler.scheduleLobbyStart` to mark the lobby as started and update the embed.
    - The role mentioned in the embed is configured with `/settings set-matchmaking-role` and stored in MongoDB.
 
 2. **Join/Leave Logic**:

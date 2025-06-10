@@ -1,11 +1,15 @@
 // utils/scheduler.js
 const cron = require('node-cron');
+const schedule = require('node-schedule');
 const scheduleService = require('../services/scheduleService');
+const lobbyService = require('../services/lobbyService');
+const { buildLobbyEmbed } = require('./matchmakingHelpers');
 const errorHandler = require('./errorHandler');
 
 class Scheduler {
   constructor() {
     this.jobs = new Map();
+    this.lobbyJobs = new Map();
   }
 
   /**
@@ -67,6 +71,29 @@ class Scheduler {
       }
     } catch (error) {
       errorHandler(error, `Scheduler - unscheduleCommand "${name}"`);
+    }
+  }
+
+  scheduleLobbyStart(id, time, message) {
+    try {
+      const job = schedule.scheduleJob(time, async () => {
+        try {
+          const data = await lobbyService.getLobby(id);
+          if (!data) return;
+          data.started = true;
+          await lobbyService.setLobby(id, data);
+          const embed = buildLobbyEmbed(data);
+          await message.edit({ embeds: [embed], components: [] });
+          console.log(`[✅] Lobby ${id} started.`);
+        } catch (err) {
+          errorHandler(err, `Scheduler - lobby start job "${id}"`);
+        }
+      });
+
+      this.lobbyJobs.set(id, job);
+      console.log(`[✅] Scheduled lobby start for ID "${id}".`);
+    } catch (error) {
+      errorHandler(error, `Scheduler - scheduleLobbyStart "${id}"`);
     }
   }
 
