@@ -26,7 +26,7 @@ module.exports = {
       const userId = interaction.user.id;
       const username = interaction.user.username;
 
-      if (lobbyData.joinedUsers.includes(username)) {
+      if (lobbyData.joinedUserIds.includes(userId)) {
         await interaction.reply({
           content: '🔴 You are already in the match!',
           flags: MessageFlags.Ephemeral,

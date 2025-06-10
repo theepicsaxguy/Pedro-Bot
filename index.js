@@ -60,7 +60,6 @@ const loadCommands = (dir = './commands') => {
   return { loaded: loadedCount, failed: failedCount };
 };
 
-loadCommands();
 const { loaded: commandsLoaded, failed: commandsFailed } = loadCommands();
 console.log(`[ℹ️] Total Commands Loaded: ${commandsLoaded}, Failed: ${commandsFailed}`);
 

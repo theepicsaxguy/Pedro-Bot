@@ -26,7 +26,7 @@ module.exports = {
       const userId = interaction.user.id;
       const username = interaction.user.username;
 
-      if (!lobbyData.joinedUsers.includes(username)) {
+      if (!lobbyData.joinedUserIds.includes(userId)) {
         await interaction.reply({
           content: '🔴 You are not in the match!',
           flags: MessageFlags.Ephemeral,
@@ -45,7 +45,7 @@ module.exports = {
         const thread = interaction.channel.threads.cache.get(lobbyData.threadId);
         if (thread) {
           await thread.members.remove(userId);
-          await thread.send(`❌ <@${username}> has left the match.`);
+          await thread.send(`❌ <@${userId}> has left the match.`);
         }
       }
 

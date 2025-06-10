@@ -30,12 +30,12 @@ Pedro-Bot/
 │   ├── admin/
 │   │   ├── reactionRoles.command.js
 │   │   ├── schedule.command.js
-│   │   └── settings.command.js
+│   │   ├── settings.command.js
+│   │   └── manageChannels.command.js
 │   ├── levels/
 │   │   └── level.command.js
 │   ├── matchmaking/
 │   │   └── matchmaking.command.js
-│   └── manageChannels.command.js
 ├── config/
 │   └── constants.js
 ├── events/
@@ -43,7 +43,6 @@ Pedro-Bot/
 │   ├── messageCreate.js
 │   ├── guildMemberAdd.js
 │   ├── guildMemberRemove.js
-│   ├── commandExecution.js
 │   ├── ready.js
 │   └── [other-events].js
 ├── models/
@@ -79,7 +78,7 @@ Pedro-Bot/
 - **`commands/matchmaking/`**: Self-contained logic for the matchmaking system.
 - **`commands/levels/`**: Self-contained logic for leveling. Contains:
   - `levelsManager.js`: Awarding XP and checking level-ups.
-  - `levelUtils.js`: XP/level threshold formulas.
+  - `utils/levelUtils.js`: XP/level threshold formulas.
   - `level.js`: The `/level` slash command.
 
 ---
@@ -91,7 +90,7 @@ Pedro-Bot/
    - Creates a new message in the `#matchmaking` channel with an embed and two buttons (JOIN, LEAVE).
    - Creates a new thread under that message for discussion.
    - Stores the lobby data in MongoDB (`Lobby` model).
-   - Schedules a start time (using `node-schedule` in `index.js`) to mark the lobby as “started” and update the embed.
+   - Schedules a start time using `node-cron` via `utils/scheduler.js` to mark the lobby as “started” and update the embed.
    - The role mentioned in the embed is configured with `/settings set-matchmaking-role` and stored in MongoDB.
 
 2. **Join/Leave Logic**:
@@ -99,7 +98,7 @@ Pedro-Bot/
    - If the button ID is “join” or “leave,” it updates the corresponding lobby’s data (stored in Mongo), and edits the embed to reflect the updated users.
 
 3. **Embed Updates**:
-   - `helpers.js` within matchmaking builds or rebuilds the embed (`buildLobbyEmbed`), adding a small footer `(MATAC) The Mature Tactical Circkle`.
+   - `matchmakingHelpers.js` within `utils/` builds or rebuilds the embed (`buildLobbyEmbed`), adding a small footer `(MATAC) The Mature Tactical Circkle`.
    - `updateLobbyEmbed` re-edits the original message.
 
 By keeping all “matchmaking” references (like channel name `#matchmaking`) and game-lobby logic in `commands/matchmaking/`, we avoid scattering that code throughout the project.
