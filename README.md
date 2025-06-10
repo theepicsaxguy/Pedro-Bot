@@ -16,6 +16,7 @@ Below is a detailed breakdown of the repository’s structure, how each componen
 5. [How to Run via Docker Compose](#how-to-run-via-docker-compose)
 6. [Adding New Features](#adding-new-features)
 7. [Reusing Functions and Avoiding Duplicates](#reusing-functions-and-avoiding-duplicates)
+8. [CI/CD and Releases](#cicd-and-releases)
 
 ---
 
@@ -218,6 +219,10 @@ All of them share the same mongoose instance from utils/database.js.
 
 
 These practices ensure that if you rename or remove a channel, or if you want to update an XP formula, you only do it in one place.
+
+CI/CD and Releases
+
+The repository ships with GitHub Actions that build and publish the Docker image whenever code lands on `main` or when a new release tag is created. Releases are handled by `release-please`, which opens a pull request proposing the next version. Once the release PR is merged, GitHub creates a tag and the Docker workflow publishes images to GHCR with `latest`, the short commit SHA, and the release version.
 
 
 ---
