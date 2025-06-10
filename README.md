@@ -229,7 +229,7 @@ These practices ensure that if you rename or remove a channel, or if you want to
 
 CI/CD and Releases
 
-GitHub Actions build and publish the Docker image whenever application code or build files change on `main` or in a pull request. When a release is published, the same workflow runs and pushes an image tagged with that version. Documentation or workflow tweaks won't trigger a new image. Each pull request gets its own `pr-N` tag so you can test before merging. `release-please` opens a pull request with the next version. After that PR merges, GitHub creates the release and the Docker workflow uploads images tagged `latest`, the short commit SHA, and the release number (for example `1.0.1`). Release-please stores the current version in `.release-please-manifest.json`.
+GitHub Actions build and publish the Docker image whenever application code or build files change on `main` or in a pull request. When a release is published, the same workflow runs and pushes an image tagged with that version. Documentation or workflow tweaks won't trigger a new image. Each pull request gets its own `pr-N` tag so you can test before merging. `release-please` opens a pull request with the next version. After that PR merges, GitHub creates the release and the Docker workflow uploads images tagged `latest`, the short commit SHA, and the release number (for example `1.0.1`). The workflow reads the tag straight from the GitHub release so the container tag always matches. Release-please stores the current version in `.release-please-manifest.json`.
 
 Release tags simply use `X.Y.Z`. Downstream jobs, including the Docker workflow, use that tag directly when naming images.
 
