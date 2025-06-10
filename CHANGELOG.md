@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.0](https://github.com/theepicsaxguy/Pedro-Bot/compare/1.0.3...1.1.0) (2025-06-10)
+
+
+### Features
+
+* add env validation and health endpoint ([#47](https://github.com/theepicsaxguy/Pedro-Bot/issues/47)) ([3f649aa](https://github.com/theepicsaxguy/Pedro-Bot/commit/3f649aaa0d3f3280c98b50091ed0a72d5c266055))
+* **levels:** add challenges, leaderboard, xp decay ([#48](https://github.com/theepicsaxguy/Pedro-Bot/issues/48)) ([96431a0](https://github.com/theepicsaxguy/Pedro-Bot/commit/96431a0bd12f7392468dd972ebc375f24f4fbabc))
+
 ## [1.0.3](https://github.com/theepicsaxguy/Pedro-Bot/compare/1.0.2...1.0.3) (2025-06-10)
 
 
