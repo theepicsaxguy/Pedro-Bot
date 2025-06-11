@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.2.0](https://github.com/theepicsaxguy/Pedro-Bot/compare/1.1.0...1.2.0) (2025-06-11)
+
+
+### Features
+
+* add audit logging and user stats ([#55](https://github.com/theepicsaxguy/Pedro-Bot/issues/55)) ([e2165b5](https://github.com/theepicsaxguy/Pedro-Bot/commit/e2165b59bc35733031790a98174a4ebffd65699e))
+* **cache:** add redis caching and discord object cache ([#61](https://github.com/theepicsaxguy/Pedro-Bot/issues/61)) ([14f39e6](https://github.com/theepicsaxguy/Pedro-Bot/commit/14f39e6345553c0cd3c60837d7709d5b994cb6d5))
+* **matchmaking:** add lobby templates and cleanup ([#57](https://github.com/theepicsaxguy/Pedro-Bot/issues/57)) ([7f23624](https://github.com/theepicsaxguy/Pedro-Bot/commit/7f236244ad0425d65c7210c9e9eba1af019dffa8))
+
+
+### Bug Fixes
+
+* **ci:** use mongo 7.0 in tests and compose ([#59](https://github.com/theepicsaxguy/Pedro-Bot/issues/59)) ([c93fe3e](https://github.com/theepicsaxguy/Pedro-Bot/commit/c93fe3e7c21593007c084a7addfd97f246285c54))
+* **deps:** update dependency redis to v5 ([#63](https://github.com/theepicsaxguy/Pedro-Bot/issues/63)) ([25ba42a](https://github.com/theepicsaxguy/Pedro-Bot/commit/25ba42a6cd772927ce4a752bb30e24de19f8eeee))
+
 ## [1.1.0](https://github.com/theepicsaxguy/Pedro-Bot/compare/1.0.3...1.1.0) (2025-06-10)
 
 
