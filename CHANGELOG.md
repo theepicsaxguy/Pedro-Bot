@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.2.0](https://github.com/theepicsaxguy/Pedro-Bot/compare/1.1.0...1.2.0) (2025-06-29)
+
+
+### Features
+
+* add audit logging and user stats ([#55](https://github.com/theepicsaxguy/Pedro-Bot/issues/55)) ([e2165b5](https://github.com/theepicsaxguy/Pedro-Bot/commit/e2165b59bc35733031790a98174a4ebffd65699e))
+* **cache:** add redis caching and discord object cache ([#61](https://github.com/theepicsaxguy/Pedro-Bot/issues/61)) ([14f39e6](https://github.com/theepicsaxguy/Pedro-Bot/commit/14f39e6345553c0cd3c60837d7709d5b994cb6d5))
+* **matchmaking:** add lobby templates and cleanup ([#57](https://github.com/theepicsaxguy/Pedro-Bot/issues/57)) ([7f23624](https://github.com/theepicsaxguy/Pedro-Bot/commit/7f236244ad0425d65c7210c9e9eba1af019dffa8))
+
+
+### Bug Fixes
+
+* **ci:** use mongo 7.0 in tests and compose ([#59](https://github.com/theepicsaxguy/Pedro-Bot/issues/59)) ([c93fe3e](https://github.com/theepicsaxguy/Pedro-Bot/commit/c93fe3e7c21593007c084a7addfd97f246285c54))
+* **deps:** update dependency discord.js to v14.21.0 ([#65](https://github.com/theepicsaxguy/Pedro-Bot/issues/65)) ([7fab67f](https://github.com/theepicsaxguy/Pedro-Bot/commit/7fab67fa9554e508e494d960fcbb63be04e8742f))
+* **deps:** update dependency dotenv to v17 ([#68](https://github.com/theepicsaxguy/Pedro-Bot/issues/68)) ([3044d42](https://github.com/theepicsaxguy/Pedro-Bot/commit/3044d42c0a5c1c6859b999f82ea92098f914b896))
+* **deps:** update dependency mongoose to v8.16.1 ([#64](https://github.com/theepicsaxguy/Pedro-Bot/issues/64)) ([e41b04d](https://github.com/theepicsaxguy/Pedro-Bot/commit/e41b04d6be571c74da0052b89eb3c9f3d84381a8))
+* **deps:** update dependency node-cron to v4.1.1 ([#66](https://github.com/theepicsaxguy/Pedro-Bot/issues/66)) ([0bdac2e](https://github.com/theepicsaxguy/Pedro-Bot/commit/0bdac2e9a81866f6003339634701f93efa69107f))
+* **deps:** update dependency redis to v5 ([#63](https://github.com/theepicsaxguy/Pedro-Bot/issues/63)) ([25ba42a](https://github.com/theepicsaxguy/Pedro-Bot/commit/25ba42a6cd772927ce4a752bb30e24de19f8eeee))
+
 ## [1.1.0](https://github.com/theepicsaxguy/Pedro-Bot/compare/1.0.3...1.1.0) (2025-06-10)
 
 
